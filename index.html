@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Topo App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1A5276">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#1A5276', light: '#2980B9', dark: '#0E2F44' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    .hidden { display: none !important; }
+    .toast { animation: slideIn 0.3s ease, fadeOut 0.3s ease 3.7s forwards; }
+    @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+    .btn-primary { @apply bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-light transition-all active:scale-95 shadow-lg; }
+    .btn-outline { @apply border-2 border-primary text-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary hover:text-white transition-all active:scale-95; }
+    .card { @apply bg-white rounded-2xl shadow-md p-6 border border-gray-100; }
+    .input-field { @apply w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors bg-gray-50; }
+    .chip { @apply inline-block px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all; }
+    .chip-active { @apply bg-primary text-white shadow-md; }
+    .chip-inactive { @apply bg-gray-100 text-gray-600 hover:bg-gray-200; }
+    @media (max-width: 640px) { .card { @apply p-4; } }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div id="app" class="max-w-lg mx-auto px-4 py-6">
+    <!-- Loading -->
+    <div id="loadingScreen" class="flex flex-col items-center justify-center min-h-[80vh]">
+      <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-gray-500">Chargement...</p>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="hidden min-h-[80vh] flex flex-col justify-center">
+      <div class="text-center mb-8">
+        <img src="icon.svg" alt="Topo App" class="w-20 h-20 mx-auto mb-4">
+        <h1 class="text-3xl font-bold text-primary">Topo App</h1>
+        <p class="text-gray-500 mt-2">Gestion d'équipes topographiques</p>
+      </div>
+      <div class="card space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input type="email" id="loginEmail" class="input-field" placeholder="exemple@email.com">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+          <input type="password" id="loginPassword" class="input-field" placeholder="••••••••">
+        </div>
+        <p id="loginError" class="text-red-500 text-sm hidden"></p>
+        <button onclick="login()" id="loginBtn" class="btn-primary w-full">Se connecter</button>
+        <p class="text-center text-sm text-gray-500 mt-4">
+          Pas de compte ? <a href="#" onclick="showRegister()" class="text-primary font-semibold">Créer un compte</a>
+        </p>
+      </div>
+      <div class="text-center mt-4"><button onclick="toggleSettings()" class="text-xs text-blue-600 underline mb-2">Configurer le serveur</button><br>
+        <span class="text-xs text-gray-400 cursor-pointer" onclick="toggleSettings()">Connexion: tsiaromiray@gmail.com ⚙️</span>
+      </div>
+    </div>
+
+    <!-- Register Screen -->
+    <div id="registerScreen" class="hidden">
+      <div class="flex items-center mb-6">
+        <button onclick="showLogin()" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
+        <h2 class="text-xl font-bold text-primary ml-2">Créer un compte</h2>
+      </div>
+      <div class="card space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Nom</label><input id="regNom" class="input-field" placeholder="Nom"></div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Prénoms</label><input id="regPrenoms" class="input-field" placeholder="Prénoms"></div>
+        </div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Matricule</label><input id="regMatricule" class="input-field" placeholder="Matricule"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" id="regEmail" class="input-field" placeholder="Email"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label><input type="password" id="regPassword" class="input-field" placeholder="6 caractères min"></div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Fonction</label>
+          <select id="regFonction" class="input-field">
+            <option>Topographe/Opérateur</option>
+            <option>Chef de brigade</option>
+            <option>Responsable Topo</option>
+            <option>Cadre Topo</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Équipements</label>
+          <div class="flex flex-wrap gap-2" id="equipementsContainer">
+            <span onclick="toggleEquip(this)" class="chip chip-inactive">Station totale</span>
+            <span onclick="toggleEquip(this)" class="chip chip-inactive">Niveau</span>
+            <span onclick="toggleEquip(this)" class="chip chip-inactive">GPS</span>
+            <span onclick="toggleEquip(this)" class="chip chip-inactive">Drone</span>
+            <span onclick="toggleEquip(this)" class="chip chip-inactive">Autres</span>
+          </div>
+        </div>
+        <p id="regError" class="text-red-500 text-sm hidden"></p>
+        <button onclick="register()" id="regBtn" class="btn-primary w-full">Créer mon compte</button>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardScreen" class="hidden">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <img src="icon.svg" class="w-10 h-10">
+          <div>
+            <h2 class="font-bold text-lg text-primary" id="userName">...</h2>
+            <p class="text-xs text-gray-500" id="userRole">...</p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="navigate('search')" class="p-2 hover:bg-gray-100 rounded-full" title="Rechercher">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </button>
+          <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-full" title="Déconnexion">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="grid grid-cols-2 gap-3 mb-6">
+        <button onclick="navigate('report')" class="card text-center hover:shadow-lg transition-all active:scale-95">
+          <svg class="w-8 h-8 text-primary mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span class="text-sm font-semibold">Nouveau rapport</span>
+        </button>
+        <button onclick="navigate('list-reports')" class="card text-center hover:shadow-lg transition-all active:scale-95">
+          <svg class="w-8 h-8 text-primary mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          <span class="text-sm font-semibold">Mes rapports</span>
+        </button>
+        <button onclick="navigate('receptions')" class="card text-center hover:shadow-lg transition-all active:scale-95">
+          <svg class="w-8 h-8 text-primary mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span class="text-sm font-semibold">Réceptions</span>
+        </button>
+        <button onclick="navigate('admin')" class="card text-center hover:shadow-lg transition-all active:scale-95" id="adminBtn">
+          <svg class="w-8 h-8 text-purple-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span class="text-sm font-semibold">Admin</span>
+        </button>
+      </div>
+
+      <!-- Pending MDC Alert -->
+      <div id="mdcAlert" class="hidden card border-l-4 border-orange-400 mb-4">
+        <div class="flex items-center gap-3">
+          <svg class="w-6 h-6 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+          <div>
+            <p class="text-sm font-semibold text-orange-700">Signatures MDC en attente</p>
+            <p class="text-xs text-gray-500" id="mdcCount">...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent reports -->
+      <div>
+        <h3 class="font-bold text-gray-700 mb-3">Rapports récents</h3>
+        <div id="recentReports" class="space-y-2">
+          <p class="text-gray-400 text-sm text-center py-4">Aucun rapport pour le moment</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Creation -->
+    <div id="reportScreen" class="hidden">
+      <div class="flex items-center mb-6">
+        <button onclick="navigate('home')" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
+        <h2 class="text-xl font-bold text-primary ml-2">Nouveau rapport</h2>
+      </div>
+      <div class="card space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Type de travaux</label>
+          <div id="travauxContainer" class="grid grid-cols-2 gap-2"></div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">PK</label>
+          <div class="flex gap-2 items-center">
+            <input id="reportPkDebut" class="input-field flex-1" placeholder="PK Début">
+            <span class="text-gray-400">-</span>
+            <input id="reportPkFin" class="input-field flex-1" placeholder="PK Fin">
+          </div>
+          <label class="inline-flex items-center mt-2"><input type="checkbox" id="pkUniqueCheck" onchange="togglePkUnique()" class="mr-2"> PK unique</label>
+          <input id="reportPkUnique" class="input-field mt-2 hidden" placeholder="PK unique (ex: PK30+321)">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Tâches</label>
+          <div id="tachesContainer" class="space-y-3"></div>
+          <button onclick="addTache()" class="btn-outline text-sm w-full mt-2">+ Ajouter une tâche</button>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Observations</label>
+          <textarea id="reportObservations" class="input-field" rows="2" placeholder="Observations..."></textarea>
+        </div>
+        <p id="reportError" class="text-red-500 text-sm hidden"></p>
+        <button onclick="submitReport()" id="reportBtn" class="btn-primary w-full">Enregistrer le rapport</button>
+      </div>
+    </div>
+
+    <!-- Reports List -->
+    <div id="listReportsScreen" class="hidden">
+      <div class="flex items-center mb-6">
+        <button onclick="navigate('home')" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
+        <h2 class="text-xl font-bold text-primary ml-2">Mes rapports</h2>
+      </div>
+      <div id="reportsList" class="space-y-3"></div>
+    </div>
+
+    <!-- Receptions -->
+    <div id="receptionsScreen" class="hidden">
+      <div class="flex items-center mb-6">
+        <button onclick="navigate('home')" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
+        <h2 class="text-xl font-bold text-primary ml-2">Réceptions</h2>
+      </div>
+      <div id="receptionsList" class="space-y-3"></div>
+    </div>
+
+    <!-- Admin -->
+    <div id="adminScreen" class="hidden">
+      <div class="flex items-center mb-6">
+        <button onclick="navigate('home')" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
+        <h2 class="text-xl font-bold text-primary ml-2">Administration</h2>
+      </div>
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-3 mb-6" id="adminStats"></div>
+      <!-- Users -->
+      <h3 class="font-bold text-gray-700 mb-3">Utilisateurs</h3>
+      <div id="adminUsers" class="space-y-2"></div>
+    </div>
+
+    <!-- Search -->
+    <div id="searchScreen" class="hidden">
+      <div class="flex items-center mb-4">
+        <button onclick="navigate('home')" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
+        <h2 class="text-xl font-bold text-primary ml-2">Recherche</h2>
+      </div>
+      <input id="searchInput" class="input-field mb-4" placeholder="PK, type, description..." onkeydown="if(event.key==='Enter')search()">
+      <div id="searchResults" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg toast" id="toastContent"></div>
+  </div>
+
+  <script>
+    // ========== CONFIG ==========
+    // API URL: localStorage > default tunnel > localhost fallback
+    const DEFAULT_API = 'https://topo-app-api.onrender.com';
+    const API = (() => {
+      const saved = localStorage.getItem('topo_api_url');
+      if (saved) return saved;
+      const isLocal = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1');
+      if (isLocal) return 'http://localhost:8000';
+      return DEFAULT_API;
+    })();
+
+    let TOKEN = localStorage.getItem('topo_token');
+    let CURRENT_USER = null;
+    let TYPE_TRAVAUX = [];
+    let IMPLANTATIONS = [];
+    let REGLAGES = [];
+    let TACHES = [];
+    let SELECTED_TRAVAUX_ID = null;
+
+    // ========== HELPERS ==========
+    function toast(msg, color='bg-green-600') {
+      const el = document.getElementById('toastContent');
+      el.textContent = msg;
+      el.className = `${color} text-white px-6 py-3 rounded-xl shadow-lg toast`;
+      document.getElementById('toast').classList.remove('hidden');
+      setTimeout(() => document.getElementById('toast').classList.add('hidden'), 4000);
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('#app > div[id$="Screen"], #app > div[id$="screen"]').forEach(el => {
+        if (!el.id) return;
+        if (el.id === id) {
+          el.classList.remove('hidden');
+        } else if (el.id !== 'loadingScreen') {
+          el.classList.add('hidden');
+        }
+      });
+    }
+
+    function navigate(page) {
+      if (page === 'home') showScreen('dashboardScreen');
+      else if (page === 'login') showScreen('loginScreen');
+      else if (page === 'register') showScreen('registerScreen');
+      else if (page === 'report') { loadReportForm(); showScreen('reportScreen'); }
+      else if (page === 'list-reports') { loadReports(); showScreen('listReportsScreen'); }
+      else if (page === 'receptions') { loadReceptions(); showScreen('receptionsScreen'); }
+      else if (page === 'admin') { loadAdmin(); showScreen('adminScreen'); }
+      else if (page === 'search') showScreen('searchScreen');
+    }
+
+    function showLogin() { showScreen('loginScreen'); }
+    function showRegister() { showScreen('registerScreen'); }
+
+    // ========== API ==========
+    async function apiCall(method, path, body = null, isForm = false) {
+      const opts = {
+        method,
+        headers: { 'Authorization': `Bearer ${TOKEN}` }
+      };
+      if (!isForm) opts.headers['Content-Type'] = 'application/json';
+      if (body) opts.body = isForm ? body : JSON.stringify(body);
+      const res = await fetch(`${API}${path}`, opts);
+      if (res.status === 401) { logout(); throw new Error('Session expirée'); }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Erreur serveur');
+      return data;
+    }
+
+    // ========== AUTH ==========
+    async function init() {
+      if (TOKEN) {
+        try {
+          CURRENT_USER = await apiCall('GET', '/users/me');
+          document.getElementById('loadingScreen').classList.add('hidden');
+          showScreen('dashboardScreen');
+          renderDashboard();
+        } catch(e) {
+          TOKEN = null;
+          localStorage.removeItem('topo_token');
+        }
+      }
+      if (!TOKEN) {
+        document.getElementById('loadingScreen').classList.add('hidden');
+        showScreen('loginScreen');
+      }
+    }
+
+    async function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      if (!email || !password) return showError('loginError', 'Champs requis');
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Erreur');
+        TOKEN = data.access_token;
+        CURRENT_USER = data.user;
+        localStorage.setItem('topo_token', TOKEN);
+        navigate('home');
+        renderDashboard();
+      } catch(e) {
+        showError('loginError', e.message);
+      }
+    }
+
+    async function register() {
+      const nom = document.getElementById('regNom').value;
+      const prenoms = document.getElementById('regPrenoms').value;
+      const matricule = document.getElementById('regMatricule').value;
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+      const fonction = document.getElementById('regFonction').value;
+      const equipements = Array.from(document.querySelectorAll('#equipementsContainer .chip-active')).map(c => c.textContent);
+      if (!nom || !prenoms || !matricule || !email || password.length < 6)
+        return showError('regError', 'Veuillez remplir tous les champs');
+      try {
+        await fetch(`${API}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom, prenoms, matricule, email, password, fonction, equipements })
+        });
+        toast('Compte créé ! Connectez-vous');
+        navigate('login');
+      } catch(e) {
+        showError('regError', e.message);
+      }
+    }
+
+    function logout() {
+      TOKEN = null;
+      CURRENT_USER = null;
+      localStorage.removeItem('topo_token');
+      navigate('login');
+    }
+
+    function toggleEquip(el) {
+      el.classList.toggle('chip-active');
+      el.classList.toggle('chip-inactive');
+    }
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    // ========== DASHBOARD ==========
+    function renderDashboard() {
+      document.getElementById('userName').textContent = CURRENT_USER ? `${CURRENT_USER.nom} ${CURRENT_USER.prenoms}` : '';
+      document.getElementById('userRole').textContent = CURRENT_USER ? CURRENT_USER.fonction : '';
+      document.getElementById('adminBtn').classList.toggle('hidden', CURRENT_USER?.role !== 'super_admin');
+      loadRecentReports();
+      if (CURRENT_USER?.role === 'super_admin') checkPendingMDC();
+    }
+
+    async function loadRecentReports() {
+      try {
+        const reports = await apiCall('GET', '/reports/');
+        const container = document.getElementById('recentReports');
+        if (!reports?.length) {
+          container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">Aucun rapport pour le moment</p>';
+          return;
+        }
+        container.innerHTML = reports.slice(0, 5).map(r => `
+          <div class="card p-4 flex items-center justify-between" onclick="viewReport(${r.id})">
+            <div>
+              <p class="font-semibold text-sm">${r.user_name || 'Rapport'}</p>
+              <p class="text-xs text-gray-500">PK: ${r.pk_unique || r.pk_debut || 'N/A'} ${r.pk_fin ? '- ' + r.pk_fin : ''}</p>
+            </div>
+            <span class="text-xs text-gray-400">${r.date ? r.date.substring(0,10) : ''}</span>
+          </div>
+        `).join('');
+      } catch(e) { console.error(e); }
+    }
+
+    async function checkPendingMDC() {
+      try {
+        const data = await apiCall('GET', '/receptions/pending-mdc');
+        if (data.pending?.length) {
+          document.getElementById('mdcCount').textContent = `${data.pending.length} réception(s) en attente`;
+          document.getElementById('mdcAlert').classList.remove('hidden');
+        }
+      } catch(e) {}
+    }
+
+    // ========== REPORT ==========
+    async function loadReportForm() {
+      SELECTED_TRAVAUX_ID = null;
+      TACHES = [];
+      document.getElementById('reportPkDebut').value = '';
+      document.getElementById('reportPkFin').value = '';
+      document.getElementById('reportPkUnique').value = '';
+      document.getElementById('reportObservations').value = '';
+      document.getElementById('pkUniqueCheck').checked = false;
+      document.getElementById('reportPkUnique').classList.add('hidden');
+      try {
+        TYPE_TRAVAUX = await apiCall('GET', '/choices/travaux');
+        IMPLANTATIONS = await apiCall('GET', '/choices/implantations');
+        REGLAGES = await apiCall('GET', '/choices/reglages');
+        renderTravaux();
+        renderTaches();
+      } catch(e) { toast('Erreur chargement: ' + e.message, 'bg-red-600'); }
+    }
+
+    function renderTravaux() {
+      const cats = {};
+      TYPE_TRAVAUX.forEach(t => { if (!cats[t.categorie]) cats[t.categorie]=[]; cats[t.categorie].push(t); });
+      const container = document.getElementById('travauxContainer');
+      container.innerHTML = Object.entries(cats).map(([cat, items]) => `
+        <div class="col-span-2"><p class="text-xs font-semibold text-gray-500 mb-1">${cat}</p>
+        <div class="flex flex-wrap gap-1">${items.map(t =>
+          `<span onclick="selectTravaux(${t.id}, this)" class="chip chip-inactive text-xs px-3 py-1">${t.nom}</span>`
+        ).join('')}</div></div>
+      `).join('');
+    }
+
+    function selectTravaux(id, el) {
+      document.querySelectorAll('#travauxContainer .chip-active').forEach(c => { c.classList.replace('chip-active','chip-inactive'); });
+      el.classList.replace('chip-inactive','chip-active');
+      SELECTED_TRAVAUX_ID = id;
+    }
+
+    function togglePkUnique() {
+      document.getElementById('reportPkUnique').classList.toggle('hidden');
+    }
+
+    function addTache() {
+      const types = [
+        {v:'leve', l:'Levés topographiques'},
+        {v:'implantation', l:'Implantations'},
+        {v:'reglage', l:'Réglages'},
+        {v:'reception', l:'Réceptions'}
+      ];
+      TACHES.push({ type: 'leve', implantationId: null, reglageId: null, description: '', files: [] });
+      renderTaches();
+    }
+
+    function updateTacheType(idx, val) {
+      TACHES[idx].type = val;
+      renderTaches();
+    }
+
+    function updateTacheDesc(idx, val) {
+      TACHES[idx].description = val;
+    }
+
+    function removeTache(idx) {
+      TACHES.splice(idx, 1);
+      renderTaches();
+    }
+
+    function renderTaches() {
+      const container = document.getElementById('tachesContainer');
+      if (!TACHES.length) {
+        container.innerHTML = '<p class="text-gray-400 text-sm text-center py-3">Aucune tâche ajoutée</p>';
+        return;
+      }
+      container.innerHTML = TACHES.map((t, i) => `
+        <div class="border border-gray-200 rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <select onchange="updateTacheType(${i}, this.value)" class="text-sm font-semibold bg-transparent border-none focus:outline-none">
+              <option value="leve" ${t.type==='leve'?'selected':''}>Levés topographiques</option>
+              <option value="implantation" ${t.type==='implantation'?'selected':''}>Implantations</option>
+              <option value="reglage" ${t.type==='reglage'?'selected':''}>Réglages</option>
+              <option value="reception" ${t.type==='reception'?'selected':''}>Réceptions</option>
+            </select>
+            <button onclick="removeTache(${i})" class="text-red-400 hover:text-red-600">&times;</button>
+          </div>
+          ${(t.type==='implantation') ? `
+            <select onchange="TACHES[${i}].implantationId=+this.value" class="input-field text-sm mb-2">
+              <option value="">Type d'implantation</option>
+              ${IMPLANTATIONS.map(c => `<option value="${c.id}" ${t.implantationId===c.id?'selected':''}>${c.nom}</option>`).join('')}
+            </select>` : ''}
+          ${(t.type==='reglage') ? `
+            <select onchange="TACHES[${i}].reglageId=+this.value" class="input-field text-sm mb-2">
+              <option value="">Type de réglage</option>
+              ${REGLAGES.map(c => `<option value="${c.id}" ${t.reglageId===c.id?'selected':''}>${c.nom}</option>`).join('')}
+            </select>` : ''}
+          <input placeholder="Description" onchange="updateTacheDesc(${i}, this.value)" class="input-field text-sm">
+        </div>
+      `).join('');
+    }
+
+    async function submitReport() {
+      if (!SELECTED_TRAVAUX_ID) return showError('reportError', 'Sélectionnez un type de travaux');
+      const sujetBtn = document.getElementById('reportBtn');
+      sujetBtn.disabled = true; sujetBtn.textContent = 'Envoi...';
+      try {
+        const pkUniqueCheck = document.getElementById('pkUniqueCheck').checked;
+        const body = {
+          type_travaux_id: SELECTED_TRAVAUX_ID,
+          pk_debut: pkUniqueCheck ? null : (document.getElementById('reportPkDebut').value || null),
+          pk_fin: pkUniqueCheck ? null : (document.getElementById('reportPkFin').value || null),
+          pk_unique: pkUniqueCheck ? document.getElementById('reportPkUnique').value : null,
+          observations: document.getElementById('reportObservations').value || null,
+          taches: TACHES.map(t => ({
+            type_tache: t.type,
+            type_implantation_id: t.implantationId || null,
+            type_reglage_id: t.reglageId || null,
+            description: t.description || null
+          }))
+        };
+        await apiCall('POST', '/reports/', body);
+        toast('Rapport créé avec succès !');
+        navigate('home');
+        loadRecentReports();
+      } catch(e) {
+        showError('reportError', e.message);
+      } finally {
+        sujetBtn.disabled = false; sujetBtn.textContent = 'Enregistrer le rapport';
+      }
+    }
+
+    // ========== REPORTS LIST ==========
+    async function loadReports() {
+      try {
+        const reports = await apiCall('GET', '/reports/');
+        const container = document.getElementById('reportsList');
+        if (!reports?.length) {
+          container.innerHTML = '<p class="text-gray-400 text-center py-8">Aucun rapport</p>';
+          return;
+        }
+        container.innerHTML = reports.map(r => `
+          <div class="card p-4 cursor-pointer hover:shadow-lg" onclick="viewReport(${r.id})">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-semibold">${r.user_name || 'Rapport #'+r.id}</p>
+                <p class="text-sm text-gray-500">PK: ${r.pk_unique || r.pk_debut || 'N/A'} ${r.pk_fin ? '- '+r.pk_fin : ''}</p>
+                <p class="text-xs text-gray-400 mt-1">${r.date||''} • ${r.taches?.length||0} tâche(s)</p>
+              </div>
+              <span class="text-xs text-gray-400">${r.observations ? r.observations.substring(0,30)+(r.observations.length>30?'...':'') : ''}</span>
+            </div>
+          </div>
+        `).join('');
+      } catch(e) { toast('Erreur: '+e.message, 'bg-red-600'); }
+    }
+
+    function viewReport(id) {
+      toast('Détail du rapport #' + id);
+    }
+
+    // ========== RECEPTIONS ==========
+    async function loadReceptions() {
+      try {
+        const receptions = await apiCall('GET', '/receptions/');
+        const container = document.getElementById('receptionsList');
+        if (!receptions?.length) {
+          container.innerHTML = '<p class="text-gray-400 text-center py-8">Aucune réception</p>';
+          return;
+        }
+        container.innerHTML = receptions.map(r => `
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-2 h-2 rounded-full ${r.mdc_signee ? 'bg-green-500' : 'bg-orange-500'}"></span>
+              <span class="font-semibold">${r.type_travaux}</span>
+              <span class="text-xs px-2 py-0.5 rounded-full ${r.mdc_signee ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">${r.mdc_signee ? 'Signé MDC' : 'En attente'}</span>
+            </div>
+            <p class="text-sm text-gray-500">PK: ${r.pk || 'N/A'}</p>
+            <p class="text-xs text-gray-400">${r.date_provisoire ? r.date_provisoire.substring(0,10) : ''}</p>
+          </div>
+        `).join('');
+      } catch(e) { toast('Erreur: '+e.message, 'bg-red-600'); }
+    }
+
+    // ========== ADMIN ==========
+    async function loadAdmin() {
+      if (CURRENT_USER?.role !== 'super_admin') return toast('Accès non autorisé', 'bg-red-600');
+      try {
+        const [summary, users, pending] = await Promise.all([
+          apiCall('GET', '/reports/admin/summary'),
+          apiCall('GET', '/users/'),
+          apiCall('GET', '/receptions/pending-mdc')
+        ]);
+        document.getElementById('adminStats').innerHTML = `
+          <div class="card p-3 text-center"><p class="text-2xl font-bold text-primary">${summary.total_reports||0}</p><p class="text-xs text-gray-500">Rapports</p></div>
+          <div class="card p-3 text-center"><p class="text-2xl font-bold text-teal-600">${summary.total_files||0}</p><p class="text-xs text-gray-500">Fichiers</p></div>
+          <div class="card p-3 text-center"><p class="text-2xl font-bold text-orange-600">${summary.receptions_pending_mdc||0}</p><p class="text-xs text-gray-500">MDC en attente</p></div>
+        `;
+        document.getElementById('adminUsers').innerHTML = users.map(u => `
+          <div class="card p-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-white font-bold text-sm">${u.nom[0]}${u.prenoms[0]}</div>
+              <div>
+                <p class="font-semibold text-sm">${u.nom} ${u.prenoms}</p>
+                <p class="text-xs text-gray-500">${u.fonction} • ${u.matricule}</p>
+              </div>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full ${u.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${u.is_active ? 'Actif' : 'Inactif'}</span>
+          </div>
+        `).join('');
+        if (pending.pending?.length) {
+          toast(`${pending.pending.length} signature(s) MDC en attente (>48h)`, 'bg-orange-600');
+        }
+      } catch(e) { toast('Erreur: '+e.message, 'bg-red-600'); }
+    }
+
+    // ========== SEARCH ==========
+    let searchTimeout;
+    document.getElementById('searchInput')?.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(search, 500);
+    });
+
+    async function search() {
+      const q = document.getElementById('searchInput').value.trim();
+      if (!q) return;
+      try {
+        const data = await apiCall('GET', `/search/?q=${encodeURIComponent(q)}`);
+        const container = document.getElementById('searchResults');
+        let html = `<p class="text-sm text-gray-500 mb-3">${data.reports_count} rapport(s) • ${data.receptions_count} réception(s)</p>`;
+        if (data.reports?.length) {
+          html += '<h4 class="font-semibold text-sm mb-2">Rapports</h4>';
+          html += data.reports.map(r => `<div class="card p-3 mb-2"><p class="font-semibold text-sm">${r.user_name||'Rapport'}</p><p class="text-xs text-gray-500">PK: ${r.pk_unique||r.pk_debut||'N/A'}</p></div>`).join('');
+        }
+        if (data.receptions?.length) {
+          html += '<h4 class="font-semibold text-sm mb-2 mt-3">Réceptions</h4>';
+          html += data.receptions.map(r => `<div class="card p-3 mb-2"><p class="font-semibold text-sm">${r.type_travaux} - PK: ${r.pk||'N/A'}</p><span class="text-xs ${r.mdc_signee ? 'text-green-600' : 'text-orange-600'}">${r.mdc_signee ? 'Signé MDC' : 'En attente'}</span></div>`).join('');
+        }
+        if (!data.reports?.length && !data.receptions?.length) html += '<p class="text-gray-400 text-center py-8">Aucun résultat</p>';
+        container.innerHTML = html;
+      } catch(e) { toast('Erreur: '+e.message, 'bg-red-600'); }
+    }
+
+    // Init
+    init();
+  </script>
+</body>
+</html>
+  <!-- Settings -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+    <div class="bg-white rounded-2xl p-6 m-4 max-w-sm w-full">
+      <h3 class="font-bold text-lg mb-4">Configuration</h3>
+      <label class="block text-sm font-medium mb-1">URL du backend</label>
+      <input id="backendUrlInput" class="input-field mb-4" placeholder="http://localhost:8000" value="">
+      <button onclick="saveBackendUrl()" class="btn-primary w-full">Enregistrer</button>
+    </div>
+  </div>
+  <script>
+    function toggleSettings() {
+      const modal = document.getElementById('settingsModal');
+      document.getElementById('backendUrlInput').value = localStorage.getItem('topo_api_url') || DEFAULT_API;
+      modal.classList.toggle('hidden');
+    }
+    function saveBackendUrl() {
+      const url = document.getElementById('backendUrlInput').value.trim();
+      if (url) localStorage.setItem('topo_api_url', url);
+      else localStorage.removeItem('topo_api_url');
+      document.getElementById('settingsModal').classList.add('hidden');
+      toast('URL sauvegardée. Reconnectez-vous.');
+    }
+  </script>

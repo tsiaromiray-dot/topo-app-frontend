@@ -1,0 +1,17 @@
+{
+  "name": "Topo App",
+  "short_name": "TopoApp",
+  "description": "Gestion d'équipes topographiques",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1A5276",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
