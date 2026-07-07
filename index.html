@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Topo App</title>
+  <title>Topo App - Gestion d'Équipes</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1A5276">
@@ -11,376 +11,405 @@
     tailwind.config = {
       theme: {
         extend: {
-          colors: {
-            primary: { DEFAULT: '#1A5276', light: '#2980B9', dark: '#0E2F44' }
-          }
+          colors: { primary: { DEFAULT: '#1A5276', light: '#2980B9', dark: '#0E2F44' } }
         }
       }
     }
   </script>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f0f2f5; }
     .hidden { display: none !important; }
     .toast { animation: slideIn 0.3s ease, fadeOut 0.3s ease 3.7s forwards; }
     @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
-    .btn-primary { @apply bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-light transition-all active:scale-95 shadow-lg; }
-    .btn-outline { @apply border-2 border-primary text-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary hover:text-white transition-all active:scale-95; }
-    .card { @apply bg-white rounded-2xl shadow-md p-6 border border-gray-100; }
-    .input-field { @apply w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors bg-gray-50; }
-    .chip { @apply inline-block px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all; }
-    .chip-active { @apply bg-primary text-white shadow-md; }
-    .chip-inactive { @apply bg-gray-100 text-gray-600 hover:bg-gray-200; }
+    .btn { @apply px-5 py-2.5 rounded-xl font-semibold transition-all active:scale-95 shadow-md; }
+    .btn-primary { @apply btn bg-primary text-white hover:bg-primary-light; }
+    .btn-outline { @apply btn border-2 border-primary text-primary hover:bg-primary hover:text-white; }
+    .btn-danger { @apply btn bg-red-600 text-white hover:bg-red-700; }
+    .btn-sm { @apply text-sm px-3 py-1.5 rounded-lg shadow-none; }
+    .card { @apply bg-white rounded-2xl shadow-sm border border-gray-100; }
+    .input { @apply w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none bg-gray-50 transition-colors; }
+    .chip { @apply inline-block px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-all; }
+    .chip-primary { @apply chip bg-primary text-white; }
+    .chip-gray { @apply chip bg-gray-200 text-gray-700 hover:bg-gray-300; }
+    .chip-green { @apply chip bg-green-100 text-green-700; }
+    .chip-orange { @apply chip bg-orange-100 text-orange-700; }
+    .stat-card { @apply card p-4 text-center; }
+    .stat-label { @apply text-xs text-gray-500 uppercase tracking-wide; }
+    .stat-value { @apply text-2xl font-bold text-primary mt-1; }
+    label { @apply block text-sm font-medium text-gray-700 mb-1; }
     @media (max-width: 640px) { .card { @apply p-4; } }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <div id="app" class="max-w-lg mx-auto px-4 py-6">
+<body>
+  <div id="app" class="max-w-lg mx-auto px-3 py-4">
     <!-- Loading -->
-    <div id="loadingScreen" class="flex flex-col items-center justify-center min-h-[80vh]">
-      <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p class="text-gray-500">Chargement...</p>
+    <div id="loadingScreen" class="flex items-center justify-center min-h-[60vh]">
+      <div class="text-center">
+        <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-gray-500">Chargement...</p>
+      </div>
     </div>
 
-    <!-- Login Screen -->
-    <div id="loginScreen" class="hidden min-h-[80vh] flex flex-col justify-center">
-      <div class="text-center mb-8">
-        <img src="icon.svg" alt="Topo App" class="w-20 h-20 mx-auto mb-4">
-        <h1 class="text-3xl font-bold text-primary">Topo App</h1>
-        <p class="text-gray-500 mt-2">Gestion d'équipes topographiques</p>
-      </div>
-      <div class="card space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input type="email" id="loginEmail" class="input-field" placeholder="exemple@email.com">
+    <!-- ======== LOGIN ======== -->
+    <div id="loginScreen" class="hidden">
+      <div class="card p-6 max-w-sm mx-auto mt-16">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <span class="text-white text-2xl font-bold">T</span>
+          </div>
+          <h1 class="text-xl font-bold text-primary">Topo App</h1>
+          <p class="text-sm text-gray-500">Gestion d'équipes topographiques</p>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-          <input type="password" id="loginPassword" class="input-field" placeholder="••••••••">
-        </div>
-        <p id="loginError" class="text-red-500 text-sm hidden"></p>
-        <button onclick="login()" id="loginBtn" class="btn-primary w-full">Se connecter</button>
-        <p class="text-center text-sm text-gray-500 mt-4">
-          Pas de compte ? <a href="#" onclick="showRegister()" class="text-primary font-semibold">Créer un compte</a>
+        <p id="loginError" class="text-red-600 text-sm mb-3 hidden"></p>
+        <input id="loginEmail" type="email" class="input mb-3" placeholder="Email" autocomplete="email">
+        <input id="loginPassword" type="password" class="input mb-4" placeholder="Mot de passe" autocomplete="current-password">
+        <button onclick="login()" class="btn-primary w-full">Se connecter</button>
+        <p class="text-center mt-4 text-sm text-gray-500">
+          Pas de compte ? <a href="#" onclick="showScreen('registerScreen');return false" class="text-primary font-semibold">S'inscrire</a>
+        </p>
+        <p class="text-center mt-2 text-xs text-gray-400">
+          <a href="#" onclick="toggleSettings();return false" class="underline">Configuration serveur</a>
         </p>
       </div>
-      <div class="text-center mt-4"><button onclick="toggleSettings()" class="text-xs text-blue-600 underline mb-2">Configurer le serveur</button><br>
-        <span class="text-xs text-gray-400 cursor-pointer" onclick="toggleSettings()">Connexion: tsiaromiray@gmail.com ⚙️</span>
-      </div>
     </div>
 
-    <!-- Register Screen -->
+    <!-- ======== REGISTER ======== -->
     <div id="registerScreen" class="hidden">
-      <div class="flex items-center mb-6">
-        <button onclick="showLogin()" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
-        <h2 class="text-xl font-bold text-primary ml-2">Créer un compte</h2>
-      </div>
-      <div class="card space-y-4">
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">Nom</label><input id="regNom" class="input-field" placeholder="Nom"></div>
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">Prénoms</label><input id="regPrenoms" class="input-field" placeholder="Prénoms"></div>
+      <div class="card p-6 max-w-sm mx-auto mt-8">
+        <h2 class="text-xl font-bold text-primary mb-4 text-center">Créer un compte</h2>
+        <p id="registerError" class="text-red-600 text-sm mb-3 hidden"></p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <input id="regNom" class="input" placeholder="Nom">
+          <input id="regPrenoms" class="input" placeholder="Prénoms">
         </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Matricule</label><input id="regMatricule" class="input-field" placeholder="Matricule"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" id="regEmail" class="input-field" placeholder="Email"></div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label><input type="password" id="regPassword" class="input-field" placeholder="6 caractères min"></div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Fonction</label>
-          <select id="regFonction" class="input-field">
-            <option>Topographe/Opérateur</option>
-            <option>Chef de brigade</option>
-            <option>Responsable Topo</option>
-            <option>Cadre Topo</option>
-          </select>
+        <input id="regMatricule" class="input mb-3" placeholder="Matricule">
+        <input id="regEmail" type="email" class="input mb-3" placeholder="Email" autocomplete="email">
+        <input id="regPassword" type="password" class="input mb-3" placeholder="Mot de passe">
+        <select id="regFonction" class="input mb-3">
+          <option value="">Fonction</option>
+          <option>Topographe/Opérateur</option>
+          <option>Chef de brigade</option>
+          <option>Responsable Topo</option>
+          <option>Cadre Topo</option>
+        </select>
+        <label>Équipements</label>
+        <div id="regEquipements" class="flex flex-wrap gap-2 mb-4">
+          <span onclick="toggleEquip(this)" class="chip-gray">Station totale</span>
+          <span onclick="toggleEquip(this)" class="chip-gray">Niveau</span>
+          <span onclick="toggleEquip(this)" class="chip-gray">GPS</span>
+          <span onclick="toggleEquip(this)" class="chip-gray">Drone</span>
+          <span onclick="toggleEquip(this)" class="chip-gray">Autres</span>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Équipements</label>
-          <div class="flex flex-wrap gap-2" id="equipementsContainer">
-            <span onclick="toggleEquip(this)" class="chip chip-inactive">Station totale</span>
-            <span onclick="toggleEquip(this)" class="chip chip-inactive">Niveau</span>
-            <span onclick="toggleEquip(this)" class="chip chip-inactive">GPS</span>
-            <span onclick="toggleEquip(this)" class="chip chip-inactive">Drone</span>
-            <span onclick="toggleEquip(this)" class="chip chip-inactive">Autres</span>
-          </div>
-        </div>
-        <p id="regError" class="text-red-500 text-sm hidden"></p>
-        <button onclick="register()" id="regBtn" class="btn-primary w-full">Créer mon compte</button>
+        <button onclick="register()" class="btn-primary w-full">Créer le compte</button>
+        <p class="text-center mt-3 text-sm text-gray-500">
+          Déjà un compte ? <a href="#" onclick="showScreen('loginScreen');return false" class="text-primary font-semibold">Connectez-vous</a>
+        </p>
       </div>
     </div>
 
-    <!-- Dashboard -->
-    <div id="dashboardScreen" class="hidden">
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-3">
-          <img src="icon.svg" class="w-10 h-10">
-          <div>
-            <h2 class="font-bold text-lg text-primary" id="userName">...</h2>
-            <p class="text-xs text-gray-500" id="userRole">...</p>
-          </div>
+    <!-- ======== DASHBOARD ======== -->
+    <div id="homeScreen" class="hidden">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h1 class="text-xl font-bold text-primary">Topo App</h1>
+          <p class="text-xs text-gray-500" id="userInfo"></p>
         </div>
         <div class="flex gap-2">
-          <button onclick="navigate('search')" class="p-2 hover:bg-gray-100 rounded-full" title="Rechercher">
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <button onclick="navigate('receptions')" class="btn-sm btn-outline relative">
+            Récep.
+            <span id="mdcBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full hidden items-center justify-center"></span>
           </button>
-          <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-full" title="Déconnexion">
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-          </button>
+          <button onclick="navigate('search')" class="btn-sm btn-outline">🔍</button>
+          <button onclick="logout()" class="btn-sm btn-danger">✕</button>
         </div>
       </div>
 
-      <!-- Actions -->
-      <div class="grid grid-cols-2 gap-3 mb-6">
-        <button onclick="navigate('report')" class="card text-center hover:shadow-lg transition-all active:scale-95">
-          <svg class="w-8 h-8 text-primary mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          <span class="text-sm font-semibold">Nouveau rapport</span>
-        </button>
-        <button onclick="navigate('list-reports')" class="card text-center hover:shadow-lg transition-all active:scale-95">
-          <svg class="w-8 h-8 text-primary mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-          <span class="text-sm font-semibold">Mes rapports</span>
-        </button>
-        <button onclick="navigate('receptions')" class="card text-center hover:shadow-lg transition-all active:scale-95">
-          <svg class="w-8 h-8 text-primary mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span class="text-sm font-semibold">Réceptions</span>
-        </button>
-        <button onclick="navigate('admin')" class="card text-center hover:shadow-lg transition-all active:scale-95" id="adminBtn">
-          <svg class="w-8 h-8 text-purple-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          <span class="text-sm font-semibold">Admin</span>
-        </button>
+      <!-- Quick Stats -->
+      <div id="dashboardStats" class="grid grid-cols-3 gap-2 mb-4 hidden">
+        <div class="stat-card"><p class="stat-label">Rapports</p><p class="stat-value" id="statReports">0</p></div>
+        <div class="stat-card"><p class="stat-label">Tâches</p><p class="stat-value" id="statTaches">0</p></div>
+        <div class="stat-card"><p class="stat-label">PK traités</p><p class="stat-value" id="statPK">0</p></div>
       </div>
 
-      <!-- Pending MDC Alert -->
-      <div id="mdcAlert" class="hidden card border-l-4 border-orange-400 mb-4">
-        <div class="flex items-center gap-3">
-          <svg class="w-6 h-6 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-          <div>
-            <p class="text-sm font-semibold text-orange-700">Signatures MDC en attente</p>
-            <p class="text-xs text-gray-500" id="mdcCount">...</p>
-          </div>
-        </div>
+      <!-- MDC Alert -->
+      <div id="mdcAlert" class="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 hidden">
+        <p class="text-orange-700 text-sm font-semibold">⚠️ Signatures MDC en attente</p>
+        <p id="mdcCount" class="text-orange-600 text-xs mt-1"></p>
+        <button onclick="navigate('receptions')" class="btn-sm bg-orange-500 text-white mt-2 rounded-lg">Voir les réceptions</button>
       </div>
 
-      <!-- Recent reports -->
-      <div>
-        <h3 class="font-bold text-gray-700 mb-3">Rapports récents</h3>
-        <div id="recentReports" class="space-y-2">
-          <p class="text-gray-400 text-sm text-center py-4">Aucun rapport pour le moment</p>
-        </div>
+      <!-- Buttons -->
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <button onclick="loadReportForm();showScreen('reportScreen')" class="btn-primary text-sm">+ Nouveau rapport</button>
+        <button onclick="navigate('reports')" class="btn-outline text-sm">Mes rapports</button>
+      </div>
+      <button id="adminBtn" onclick="navigate('admin')" class="btn-outline w-full text-sm mb-4 hidden">Administration</button>
+
+      <!-- Recent Reports -->
+      <h2 class="font-bold text-gray-700 text-sm mb-2">Rapports récents</h2>
+      <div id="recentReports" class="space-y-2">
+        <p class="text-gray-400 text-sm text-center py-6">Aucun rapport</p>
       </div>
     </div>
 
-    <!-- Report Creation -->
+    <!-- ======== REPORT FORM ======== -->
     <div id="reportScreen" class="hidden">
-      <div class="flex items-center mb-6">
-        <button onclick="navigate('home')" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
-        <h2 class="text-xl font-bold text-primary ml-2">Nouveau rapport</h2>
+      <div class="flex items-center mb-4">
+        <button onclick="showScreen('homeScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
+        <h2 class="text-lg font-bold text-primary ml-2">Nouveau rapport</h2>
       </div>
-      <div class="card space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Type de travaux</label>
-          <div id="travauxContainer" class="grid grid-cols-2 gap-2"></div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">PK</label>
-          <div class="flex gap-2 items-center">
-            <input id="reportPkDebut" class="input-field flex-1" placeholder="PK Début">
-            <span class="text-gray-400">-</span>
-            <input id="reportPkFin" class="input-field flex-1" placeholder="PK Fin">
-          </div>
-          <label class="inline-flex items-center mt-2"><input type="checkbox" id="pkUniqueCheck" onchange="togglePkUnique()" class="mr-2"> PK unique</label>
-          <input id="reportPkUnique" class="input-field mt-2 hidden" placeholder="PK unique (ex: PK30+321)">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Tâches</label>
-          <div id="tachesContainer" class="space-y-3"></div>
-          <button onclick="addTache()" class="btn-outline text-sm w-full mt-2">+ Ajouter une tâche</button>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Observations</label>
-          <textarea id="reportObservations" class="input-field" rows="2" placeholder="Observations..."></textarea>
-        </div>
-        <p id="reportError" class="text-red-500 text-sm hidden"></p>
-        <button onclick="submitReport()" id="reportBtn" class="btn-primary w-full">Enregistrer le rapport</button>
+      <p id="reportError" class="text-red-600 text-sm mb-3 hidden"></p>
+
+      <label>Date</label>
+      <input id="reportDate" type="date" class="input mb-3">
+
+      <label>Type de travaux</label>
+      <select id="reportTravaux" class="input mb-3" onchange="onTravauxChange()">
+        <option value="">Sélectionner...</option>
+      </select>
+
+      <div id="reportTravauxAutreGroup" class="hidden mb-3">
+        <label>Précisez le type de travaux</label>
+        <input id="reportTravauxAutre" class="input" placeholder="Autre type...">
       </div>
+
+      <label>Aide topo (chef d'équipe)</label>
+      <input id="reportAideTopo" class="input mb-3" placeholder="Nom de l'aide topo">
+
+      <div class="flex items-center gap-2 mb-3">
+        <input type="checkbox" id="pkUniqueCheck" onchange="togglePKMode()">
+        <label class="mb-0">PK unique (au lieu de début/fin)</label>
+      </div>
+
+      <div id="pkRangeGroup" class="grid grid-cols-2 gap-2 mb-3">
+        <div>
+          <label>PK Début</label>
+          <input id="reportPkDebut" class="input" placeholder="313+080">
+        </div>
+        <div>
+          <label>PK Fin</label>
+          <input id="reportPkFin" class="input" placeholder="313+280">
+        </div>
+      </div>
+      <div id="pkUniqueGroup" class="hidden mb-3">
+        <label>PK Unique</label>
+        <input id="reportPkUnique" class="input" placeholder="PK31+500">
+      </div>
+      <div class="mb-3">
+        <label>Longueur (m)</label>
+        <input id="reportLongueur" class="input" placeholder="200.00">
+      </div>
+
+      <label>Observations</label>
+      <textarea id="reportObservations" class="input mb-4" rows="2" placeholder="Observations générales..."></textarea>
+
+      <!-- Tasks -->
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-bold text-gray-700 text-sm">Tâches</h3>
+        <button onclick="addTache()" class="btn-sm bg-green-600 text-white">+ Ajouter</button>
+      </div>
+      <div id="tachesContainer" class="space-y-3 mb-4"></div>
+
+      <button onclick="submitReport()" id="reportBtn" class="btn-primary w-full">Enregistrer le rapport</button>
     </div>
 
-    <!-- Reports List -->
-    <div id="listReportsScreen" class="hidden">
-      <div class="flex items-center mb-6">
-        <button onclick="navigate('home')" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
-        <h2 class="text-xl font-bold text-primary ml-2">Mes rapports</h2>
+    <!-- ======== REPORTS LIST ======== -->
+    <div id="reportsScreen" class="hidden">
+      <div class="flex items-center mb-4">
+        <button onclick="showScreen('homeScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
+        <h2 class="text-lg font-bold text-primary ml-2">Mes rapports</h2>
       </div>
-      <div id="reportsList" class="space-y-3"></div>
+      <div id="reportsList" class="space-y-2"></div>
     </div>
 
-    <!-- Receptions -->
+    <!-- ======== REPORT DETAIL ======== -->
+    <div id="reportDetailScreen" class="hidden">
+      <div class="flex items-center mb-4">
+        <button onclick="showScreen('reportsScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
+        <h2 class="text-lg font-bold text-primary ml-2">Détail rapport</h2>
+      </div>
+      <div id="reportDetailContent"></div>
+    </div>
+
+    <!-- ======== RECEPTIONS ======== -->
     <div id="receptionsScreen" class="hidden">
-      <div class="flex items-center mb-6">
-        <button onclick="navigate('home')" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
-        <h2 class="text-xl font-bold text-primary ml-2">Réceptions</h2>
+      <div class="flex items-center mb-4">
+        <button onclick="showScreen('homeScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
+        <h2 class="text-lg font-bold text-primary ml-2">Réceptions</h2>
       </div>
-      <div id="receptionsList" class="space-y-3"></div>
+      <div id="receptionsList" class="space-y-2"></div>
     </div>
 
-    <!-- Admin -->
+    <!-- ======== ADMIN ======== -->
     <div id="adminScreen" class="hidden">
-      <div class="flex items-center mb-6">
-        <button onclick="navigate('home')" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
-        <h2 class="text-xl font-bold text-primary ml-2">Administration</h2>
+      <div class="flex items-center mb-4">
+        <button onclick="showScreen('homeScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
+        <h2 class="text-lg font-bold text-primary ml-2">Administration</h2>
       </div>
-      <!-- Stats -->
-      <div class="grid grid-cols-3 gap-3 mb-6" id="adminStats"></div>
-      <!-- Users -->
-      <h3 class="font-bold text-gray-700 mb-3">Utilisateurs</h3>
+      <div id="adminStats" class="grid grid-cols-2 gap-3 mb-4"></div>
+      <h3 class="font-bold text-gray-700 text-sm mb-2">Utilisateurs</h3>
       <div id="adminUsers" class="space-y-2"></div>
+      <h3 class="font-bold text-gray-700 text-sm mb-2 mt-4">Signatures MDC en attente</h3>
+      <div id="adminPendingMDC" class="space-y-2"></div>
     </div>
 
-    <!-- Search -->
+    <!-- ======== SEARCH ======== -->
     <div id="searchScreen" class="hidden">
       <div class="flex items-center mb-4">
-        <button onclick="navigate('home')" class="p-2 hover:bg-gray-100 rounded-full">&larr;</button>
-        <h2 class="text-xl font-bold text-primary ml-2">Recherche</h2>
+        <button onclick="showScreen('homeScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
+        <h2 class="text-lg font-bold text-primary ml-2">Recherche</h2>
       </div>
-      <input id="searchInput" class="input-field mb-4" placeholder="PK, type, description..." onkeydown="if(event.key==='Enter')search()">
+      <input id="searchInput" class="input mb-3" placeholder="PK, type, description..." onkeydown="if(event.key==='Enter')doSearch()">
+      <button onclick="doSearch()" class="btn-primary w-full mb-4">Rechercher</button>
       <div id="searchResults" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+    <div class="bg-white rounded-2xl p-6 m-4 max-w-sm w-full" onclick="event.stopPropagation()">
+      <h3 class="font-bold text-lg mb-4">Configuration serveur</h3>
+      <label class="block text-sm font-medium mb-1">URL du backend</label>
+      <input id="backendUrlInput" class="input mb-4" placeholder="https://...">
+      <button onclick="saveBackendUrl()" class="btn-primary w-full">Enregistrer</button>
     </div>
   </div>
 
   <!-- Toast -->
   <div id="toast" class="fixed top-4 right-4 z-50 hidden">
-    <div class="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg toast" id="toastContent"></div>
+    <div class="bg-green-600 text-white px-5 py-3 rounded-xl shadow-lg toast" id="toastContent"></div>
   </div>
 
   <script>
     // ========== CONFIG ==========
-    // API URL: localStorage > default tunnel > localhost fallback
     const DEFAULT_API = 'https://topo-app-api.onrender.com';
     const API = (() => {
       const saved = localStorage.getItem('topo_api_url');
       if (saved) return saved;
-      const isLocal = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1');
-      if (isLocal) return 'http://localhost:8000';
       return DEFAULT_API;
     })();
 
     let TOKEN = localStorage.getItem('topo_token');
     let CURRENT_USER = null;
     let TYPE_TRAVAUX = [];
-    let IMPLANTATIONS = [];
-    let REGLAGES = [];
+    let STATUTS = [];
     let TACHES = [];
     let SELECTED_TRAVAUX_ID = null;
 
+    const TACHE_TYPES = [
+      'Levé topographique', 'Implantation', 'Réglage', 'Réception', 'Appro', 'Suivi'
+    ];
+
     // ========== HELPERS ==========
-    function toast(msg, color='bg-green-600') {
+    function toast(msg, color = 'bg-green-600') {
       const el = document.getElementById('toastContent');
       el.textContent = msg;
-      el.className = `${color} text-white px-6 py-3 rounded-xl shadow-lg toast`;
+      el.className = color + ' text-white px-5 py-3 rounded-xl shadow-lg toast';
       document.getElementById('toast').classList.remove('hidden');
       setTimeout(() => document.getElementById('toast').classList.add('hidden'), 4000);
     }
 
     function showScreen(id) {
-      document.querySelectorAll('#app > div[id$="Screen"], #app > div[id$="screen"]').forEach(el => {
-        if (!el.id) return;
-        if (el.id === id) {
-          el.classList.remove('hidden');
-        } else if (el.id !== 'loadingScreen') {
-          el.classList.add('hidden');
-        }
+      document.querySelectorAll('#app > div[id]').forEach(el => {
+        if (el.id === id) el.classList.remove('hidden');
+        else if (el.id !== 'loadingScreen') el.classList.add('hidden');
       });
     }
 
     function navigate(page) {
-      if (page === 'home') showScreen('dashboardScreen');
-      else if (page === 'login') showScreen('loginScreen');
-      else if (page === 'register') showScreen('registerScreen');
-      else if (page === 'report') { loadReportForm(); showScreen('reportScreen'); }
-      else if (page === 'list-reports') { loadReports(); showScreen('listReportsScreen'); }
-      else if (page === 'receptions') { loadReceptions(); showScreen('receptionsScreen'); }
-      else if (page === 'admin') { loadAdmin(); showScreen('adminScreen'); }
-      else if (page === 'search') showScreen('searchScreen');
+      if (page === 'reports') loadReports();
+      else if (page === 'receptions') loadReceptions();
+      else if (page === 'admin') loadAdmin();
+      showScreen(page + 'Screen');
     }
 
-    function showLogin() { showScreen('loginScreen'); }
-    function showRegister() { showScreen('registerScreen'); }
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function toggleEquip(el) {
+      el.classList.toggle('chip-gray');
+      el.classList.toggle('bg-primary');
+      el.classList.toggle('text-white');
+    }
 
     // ========== API ==========
-    async function apiCall(method, path, body = null, isForm = false) {
-      const opts = {
-        method,
-        headers: { 'Authorization': `Bearer ${TOKEN}` }
-      };
-      if (!isForm) opts.headers['Content-Type'] = 'application/json';
-      if (body) opts.body = isForm ? body : JSON.stringify(body);
-      const res = await fetch(`${API}${path}`, opts);
-      if (res.status === 401) { logout(); throw new Error('Session expirée'); }
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erreur serveur');
-      return data;
+    async function apiCall(method, path, body = null) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
+
+      const opts = { method, headers };
+      if (body) opts.body = JSON.stringify(body);
+
+      const res = await fetch(API + path, opts);
+      if (!res.ok) {
+        let msg = 'Erreur ' + res.status;
+        try {
+          const err = await res.json();
+          msg = err.detail || JSON.stringify(err);
+        } catch(e) {}
+        throw new Error(msg);
+      }
+      if (res.status === 204) return null;
+      return res.json();
+    }
+
+    async function apiUpload(method, path, formData) {
+      const headers = {};
+      if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
+      const res = await fetch(API + path, { method, headers, body: formData });
+      if (!res.ok) {
+        let msg = 'Erreur ' + res.status;
+        try { const err = await res.json(); msg = err.detail || JSON.stringify(err); } catch(e) {}
+        throw new Error(msg);
+      }
+      return res.json();
     }
 
     // ========== AUTH ==========
-    async function init() {
-      if (TOKEN) {
-        try {
-          CURRENT_USER = await apiCall('GET', '/users/me');
-          document.getElementById('loadingScreen').classList.add('hidden');
-          showScreen('dashboardScreen');
-          renderDashboard();
-        } catch(e) {
-          TOKEN = null;
-          localStorage.removeItem('topo_token');
-        }
-      }
-      if (!TOKEN) {
-        document.getElementById('loadingScreen').classList.add('hidden');
-        showScreen('loginScreen');
-      }
-    }
-
     async function login() {
-      const email = document.getElementById('loginEmail').value;
+      const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
-      if (!email || !password) return showError('loginError', 'Champs requis');
+      if (!email || !password) return showError('loginError', 'Remplissez tous les champs');
+
       try {
-        const res = await fetch(`${API}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Erreur');
+        const data = await apiCall('POST', '/auth/login', { email, password });
         TOKEN = data.access_token;
         CURRENT_USER = data.user;
         localStorage.setItem('topo_token', TOKEN);
-        navigate('home');
-        renderDashboard();
+        toast('Connecté: ' + CURRENT_USER.prenoms + ' ' + CURRENT_USER.nom);
+        await loadDashboard();
+        showScreen('homeScreen');
       } catch(e) {
         showError('loginError', e.message);
       }
     }
 
     async function register() {
-      const nom = document.getElementById('regNom').value;
-      const prenoms = document.getElementById('regPrenoms').value;
-      const matricule = document.getElementById('regMatricule').value;
-      const email = document.getElementById('regEmail').value;
+      const nom = document.getElementById('regNom').value.trim();
+      const prenoms = document.getElementById('regPrenoms').value.trim();
+      const matricule = document.getElementById('regMatricule').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value;
       const fonction = document.getElementById('regFonction').value;
-      const equipements = Array.from(document.querySelectorAll('#equipementsContainer .chip-active')).map(c => c.textContent);
-      if (!nom || !prenoms || !matricule || !email || password.length < 6)
-        return showError('regError', 'Veuillez remplir tous les champs');
+      if (!nom || !prenoms || !matricule || !email || !password || !fonction)
+        return showError('registerError', 'Remplissez tous les champs');
+
+      const equipements = [];
+      document.querySelectorAll('#regEquipements > span').forEach(el => {
+        if (!el.classList.contains('chip-gray')) equipements.push(el.textContent);
+      });
+
       try {
-        await fetch(`${API}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nom, prenoms, matricule, email, password, fonction, equipements })
-        });
-        toast('Compte créé ! Connectez-vous');
-        navigate('login');
+        await apiCall('POST', '/auth/register', { nom, prenoms, matricule, email, password, fonction, equipements });
+        toast('Compte créé ! Connectez-vous.');
+        showScreen('loginScreen');
       } catch(e) {
-        showError('regError', e.message);
+        showError('registerError', e.message);
       }
     }
 
@@ -388,119 +417,141 @@
       TOKEN = null;
       CURRENT_USER = null;
       localStorage.removeItem('topo_token');
-      navigate('login');
-    }
-
-    function toggleEquip(el) {
-      el.classList.toggle('chip-active');
-      el.classList.toggle('chip-inactive');
-    }
-
-    function showError(id, msg) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.classList.remove('hidden');
-      setTimeout(() => el.classList.add('hidden'), 5000);
+      showScreen('loginScreen');
     }
 
     // ========== DASHBOARD ==========
-    function renderDashboard() {
-      document.getElementById('userName').textContent = CURRENT_USER ? `${CURRENT_USER.nom} ${CURRENT_USER.prenoms}` : '';
-      document.getElementById('userRole').textContent = CURRENT_USER ? CURRENT_USER.fonction : '';
-      document.getElementById('adminBtn').classList.toggle('hidden', CURRENT_USER?.role !== 'super_admin');
-      loadRecentReports();
-      if (CURRENT_USER?.role === 'super_admin') checkPendingMDC();
+    async function init() {
+      // Hide all screens, show loading
+      if (TOKEN) {
+        try {
+          const user = await apiCall('GET', '/users/me');
+          CURRENT_USER = user;
+          await loadDashboard();
+          showScreen('homeScreen');
+          return;
+        } catch(e) {
+          // Token expired
+          localStorage.removeItem('topo_token');
+          TOKEN = null;
+        }
+      }
+      showScreen('loginScreen');
+    }
+
+    async function loadDashboard() {
+      if (!CURRENT_USER) return;
+      const info = document.getElementById('userInfo');
+      const roleLabel = CURRENT_USER.role === 'super_admin' ? ' (Admin)' : '';
+      info.textContent = CURRENT_USER.prenoms + ' ' + CURRENT_USER.nom + roleLabel;
+
+      if (CURRENT_USER.role === 'super_admin') {
+        document.getElementById('adminBtn').classList.remove('hidden');
+        document.getElementById('dashboardStats').classList.remove('hidden');
+        try {
+          const summary = await apiCall('GET', '/reports/admin/summary');
+          document.getElementById('statReports').textContent = summary.total_reports || 0;
+          document.getElementById('statTaches').textContent = summary.total_taches || 0;
+          document.getElementById('statPK').textContent = summary.pending_mdc || 0;
+        } catch(e) {}
+      }
+
+      // Check pending MDC
+      try {
+        const data = await apiCall('GET', '/receptions/pending-mdc');
+        if (data.pending && data.pending.length > 0) {
+          document.getElementById('mdcCount').textContent = data.pending.length + ' réception(s) en attente de signature';
+          document.getElementById('mdcAlert').classList.remove('hidden');
+          document.getElementById('mdcBadge').textContent = data.pending.length;
+          document.getElementById('mdcBadge').classList.remove('hidden');
+        } else {
+          document.getElementById('mdcBadge').classList.add('hidden');
+        }
+      } catch(e) {}
+
+      // Load recent reports
+      await loadRecentReports();
     }
 
     async function loadRecentReports() {
       try {
         const reports = await apiCall('GET', '/reports/');
         const container = document.getElementById('recentReports');
-        if (!reports?.length) {
-          container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">Aucun rapport pour le moment</p>';
+        if (!reports || reports.length === 0) {
+          container.innerHTML = '<p class="text-gray-400 text-sm text-center py-6">Aucun rapport pour le moment</p>';
           return;
         }
-        container.innerHTML = reports.slice(0, 5).map(r => `
-          <div class="card p-4 flex items-center justify-between" onclick="viewReport(${r.id})">
-            <div>
-              <p class="font-semibold text-sm">${r.user_name || 'Rapport'}</p>
-              <p class="text-xs text-gray-500">PK: ${r.pk_unique || r.pk_debut || 'N/A'} ${r.pk_fin ? '- ' + r.pk_fin : ''}</p>
-            </div>
-            <span class="text-xs text-gray-400">${r.date ? r.date.substring(0,10) : ''}</span>
-          </div>
-        `).join('');
+        container.innerHTML = reports.slice(0, 10).map(r => {
+          const taches = r.taches || [];
+          const pkInfo = taches.map(t => t.pk_unique || t.pk_debut || '').filter(Boolean).join(', ');
+          return '<div class="card p-3 flex justify-between items-center cursor-pointer hover:shadow-md" onclick="viewReport(' + r.id + ')">' +
+            '<div><p class="font-semibold text-sm">' + (r.user_name || 'Rapport') + '</p>' +
+            '<p class="text-xs text-gray-500">' + (pkInfo || 'N/A') + '</p></div>' +
+            '<span class="text-xs text-gray-400">' + (r.date ? r.date.substring(0, 10) : '') + '</span></div>';
+        }).join('');
       } catch(e) { console.error(e); }
     }
 
-    async function checkPendingMDC() {
-      try {
-        const data = await apiCall('GET', '/receptions/pending-mdc');
-        if (data.pending?.length) {
-          document.getElementById('mdcCount').textContent = `${data.pending.length} réception(s) en attente`;
-          document.getElementById('mdcAlert').classList.remove('hidden');
-        }
-      } catch(e) {}
-    }
-
-    // ========== REPORT ==========
+    // ========== REPORT FORM ==========
     async function loadReportForm() {
       SELECTED_TRAVAUX_ID = null;
       TACHES = [];
+      document.getElementById('reportDate').value = new Date().toISOString().substring(0, 10);
       document.getElementById('reportPkDebut').value = '';
       document.getElementById('reportPkFin').value = '';
       document.getElementById('reportPkUnique').value = '';
+      document.getElementById('reportLongueur').value = '';
+      document.getElementById('reportAideTopo').value = '';
       document.getElementById('reportObservations').value = '';
+      document.getElementById('reportError').classList.add('hidden');
       document.getElementById('pkUniqueCheck').checked = false;
-      document.getElementById('reportPkUnique').classList.add('hidden');
+      document.getElementById('pkRangeGroup').classList.remove('hidden');
+      document.getElementById('pkUniqueGroup').classList.add('hidden');
+
       try {
         TYPE_TRAVAUX = await apiCall('GET', '/choices/travaux');
-        IMPLANTATIONS = await apiCall('GET', '/choices/implantations');
-        REGLAGES = await apiCall('GET', '/choices/reglages');
-        renderTravaux();
+        STATUTS = await apiCall('GET', '/choices/statuts');
+
+        const sel = document.getElementById('reportTravaux');
+        sel.innerHTML = '<option value="">Sélectionner...</option>';
+        TYPE_TRAVAUX.forEach(t => {
+          sel.innerHTML += '<option value="' + t.id + '">' + t.nom + '</option>';
+        });
         renderTaches();
-      } catch(e) { toast('Erreur chargement: ' + e.message, 'bg-red-600'); }
+      } catch(e) {
+        toast('Erreur chargement: ' + e.message, 'bg-red-600');
+      }
     }
 
-    function renderTravaux() {
-      const cats = {};
-      TYPE_TRAVAUX.forEach(t => { if (!cats[t.categorie]) cats[t.categorie]=[]; cats[t.categorie].push(t); });
-      const container = document.getElementById('travauxContainer');
-      container.innerHTML = Object.entries(cats).map(([cat, items]) => `
-        <div class="col-span-2"><p class="text-xs font-semibold text-gray-500 mb-1">${cat}</p>
-        <div class="flex flex-wrap gap-1">${items.map(t =>
-          `<span onclick="selectTravaux(${t.id}, this)" class="chip chip-inactive text-xs px-3 py-1">${t.nom}</span>`
-        ).join('')}</div></div>
-      `).join('');
+    function onTravauxChange() {
+      const id = parseInt(document.getElementById('reportTravaux').value);
+      SELECTED_TRAVAUX_ID = id || null;
+      const travaux = TYPE_TRAVAUX.find(t => t.id === id);
+      document.getElementById('reportTravauxAutreGroup').classList.toggle('hidden', !travaux || travaux.nom !== 'Autres');
+      // Re-render taches with new statuts
+      renderTaches();
     }
 
-    function selectTravaux(id, el) {
-      document.querySelectorAll('#travauxContainer .chip-active').forEach(c => { c.classList.replace('chip-active','chip-inactive'); });
-      el.classList.replace('chip-inactive','chip-active');
-      SELECTED_TRAVAUX_ID = id;
+    function togglePKMode() {
+      const checked = document.getElementById('pkUniqueCheck').checked;
+      document.getElementById('pkRangeGroup').classList.toggle('hidden', checked);
+      document.getElementById('pkUniqueGroup').classList.toggle('hidden', !checked);
     }
 
-    function togglePkUnique() {
-      document.getElementById('reportPkUnique').classList.toggle('hidden');
+    function getStatutsForTravaux() {
+      if (!SELECTED_TRAVAUX_ID) return STATUTS;
+      const filtered = STATUTS.filter(s => s.travaux_id === null || s.travaux_id === SELECTED_TRAVAUX_ID);
+      if (filtered.length === 0) return STATUTS;
+      return filtered;
     }
 
     function addTache() {
-      const types = [
-        {v:'leve', l:'Levés topographiques'},
-        {v:'implantation', l:'Implantations'},
-        {v:'reglage', l:'Réglages'},
-        {v:'reception', l:'Réceptions'}
-      ];
-      TACHES.push({ type: 'leve', implantationId: null, reglageId: null, description: '', files: [] });
+      TACHES.push({ type: TACHE_TYPES[0], statut_id: null, statut_autre: '', pk_debut: '', pk_fin: '', pk_unique: '', longueur: '', aide_topo: '', description: '', files: [] });
       renderTaches();
     }
 
-    function updateTacheType(idx, val) {
-      TACHES[idx].type = val;
-      renderTaches();
-    }
-
-    function updateTacheDesc(idx, val) {
-      TACHES[idx].description = val;
+    function updateTache(idx, field, value) {
+      if (TACHES[idx]) TACHES[idx][field] = value;
     }
 
     function removeTache(idx) {
@@ -510,63 +561,138 @@
 
     function renderTaches() {
       const container = document.getElementById('tachesContainer');
-      if (!TACHES.length) {
-        container.innerHTML = '<p class="text-gray-400 text-sm text-center py-3">Aucune tâche ajoutée</p>';
+      if (TACHES.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-xs text-center py-4">Aucune tâche. Cliquez "+ Ajouter"</p>';
         return;
       }
-      container.innerHTML = TACHES.map((t, i) => `
-        <div class="border border-gray-200 rounded-xl p-3">
-          <div class="flex items-center justify-between mb-2">
-            <select onchange="updateTacheType(${i}, this.value)" class="text-sm font-semibold bg-transparent border-none focus:outline-none">
-              <option value="leve" ${t.type==='leve'?'selected':''}>Levés topographiques</option>
-              <option value="implantation" ${t.type==='implantation'?'selected':''}>Implantations</option>
-              <option value="reglage" ${t.type==='reglage'?'selected':''}>Réglages</option>
-              <option value="reception" ${t.type==='reception'?'selected':''}>Réceptions</option>
-            </select>
-            <button onclick="removeTache(${i})" class="text-red-400 hover:text-red-600">&times;</button>
-          </div>
-          ${(t.type==='implantation') ? `
-            <select onchange="TACHES[${i}].implantationId=+this.value" class="input-field text-sm mb-2">
-              <option value="">Type d'implantation</option>
-              ${IMPLANTATIONS.map(c => `<option value="${c.id}" ${t.implantationId===c.id?'selected':''}>${c.nom}</option>`).join('')}
-            </select>` : ''}
-          ${(t.type==='reglage') ? `
-            <select onchange="TACHES[${i}].reglageId=+this.value" class="input-field text-sm mb-2">
-              <option value="">Type de réglage</option>
-              ${REGLAGES.map(c => `<option value="${c.id}" ${t.reglageId===c.id?'selected':''}>${c.nom}</option>`).join('')}
-            </select>` : ''}
-          <input placeholder="Description" onchange="updateTacheDesc(${i}, this.value)" class="input-field text-sm">
-        </div>
-      `).join('');
+
+      const statuts = getStatutsForTravaux();
+
+      container.innerHTML = TACHES.map((t, i) => {
+        const isUnique = document.getElementById('pkUniqueCheck').checked;
+        return '<div class="card p-3 border-l-4 border-primary">' +
+          '<div class="flex justify-between items-center mb-2">' +
+          '<strong class="text-sm">Tâche ' + (i + 1) + '</strong>' +
+          '<button onclick="removeTache(' + i + ')" class="text-red-400 hover:text-red-600 text-lg">&times;</button></div>' +
+
+          '<label class="text-xs">Type de tâche</label>' +
+          '<select onchange="updateTache(' + i + ',\'type\',this.value)" class="input text-sm mb-2">' +
+          TACHE_TYPES.map(tt => '<option value="' + tt + '"' + (t.type === tt ? ' selected' : '') + '>' + tt + '</option>').join('') +
+          '</select>' +
+
+          '<label class="text-xs">Statut</label>' +
+          '<select onchange="updateTache(' + i + ',\'statut_id\',parseInt(this.value)||null);if(this.value===\\'autre\\')document.getElementById(\\'statutAutre\\'+' + i + ').classList.remove(\\'hidden\\')" class="input text-sm mb-1">' +
+          '<option value="">--</option>' +
+          statuts.map(s => '<option value="' + s.id + '"' + (t.statut_id === s.id ? ' selected' : '') + '>' + s.nom + '</option>').join('') +
+          '<option value="autre"' + (t.statut_id === null && t.statut_autre ? ' selected' : '') + '>Autres...</option>' +
+          '</select>' +
+          '<input id="statutAutre' + i + '" onchange="updateTache(' + i + ',\'statut_autre\',this.value)" class="input text-sm mb-2' + (t.statut_id !== null && !t.statut_autre ? ' hidden' : '') + '" placeholder="Statut autre..." value="' + (t.statut_autre || '') + '">' +
+
+          '<div class="grid grid-cols-2 gap-2 mb-2">' +
+          '<div><label class="text-xs">PK ' + (isUnique ? 'Unique' : 'Début') + '</label>' +
+          '<input onchange="updateTache(' + i + ',\'' + (isUnique ? 'pk_unique' : 'pk_debut') + '\',this.value)" class="input text-sm" placeholder="313+080" value="' + (t.pk_debut || t.pk_unique || '') + '"></div>' +
+          (!isUnique ? '<div><label class="text-xs">PK Fin</label>' +
+          '<input onchange="updateTache(' + i + ',\'pk_fin\',this.value)" class="input text-sm" placeholder="313+280" value="' + (t.pk_fin || '') + '"></div>' : '') +
+          '</div>' +
+
+          '<div class="grid grid-cols-2 gap-2 mb-2">' +
+          '<div><label class="text-xs">Longueur (m)</label>' +
+          '<input onchange="updateTache(' + i + ',\'longueur\',this.value)" class="input text-sm" placeholder="200" value="' + (t.longueur || '') + '"></div>' +
+          '<div><label class="text-xs">Aide topo</label>' +
+          '<input onchange="updateTache(' + i + ',\'aide_topo\',this.value)" class="input text-sm" placeholder="Nom" value="' + (t.aide_topo || '') + '"></div>' +
+          '</div>' +
+
+          '<label class="text-xs">Description</label>' +
+          '<textarea onchange="updateTache(' + i + ',\'description\',this.value)" class="input text-sm" rows="1" placeholder="Description...">' + (t.description || '') + '</textarea>' +
+
+          // File upload for this task
+          '<div class="mt-2">' +
+          '<label class="text-xs">Pièces jointes</label>' +
+          '<input type="file" multiple onchange="uploadTaskFiles(' + i + ', this.files)" class="text-xs w-full">' +
+          '<div id="taskFiles_' + i + '" class="mt-1"></div></div>' +
+          '</div>';
+      }).join('');
+    }
+
+    async function uploadTaskFiles(idx, files) {
+      if (!files || files.length === 0) return;
+      // We need to create the report first, then upload files.
+      // Store files temporarily and upload after submit
+      const tache = TACHES[idx];
+      if (!tache._pendingFiles) tache._pendingFiles = [];
+      for (const f of files) {
+        tache._pendingFiles.push(f);
+      }
+      const container = document.getElementById('taskFiles_' + idx);
+      container.innerHTML = '<p class="text-xs text-green-600">' + tache._pendingFiles.length + ' fichier(s) sélectionné(s)</p>';
     }
 
     async function submitReport() {
       if (!SELECTED_TRAVAUX_ID) return showError('reportError', 'Sélectionnez un type de travaux');
-      const sujetBtn = document.getElementById('reportBtn');
-      sujetBtn.disabled = true; sujetBtn.textContent = 'Envoi...';
+
+      const pkUnique = document.getElementById('pkUniqueCheck').checked;
+      const pkDebut = pkUnique ? null : (document.getElementById('reportPkDebut').value.trim() || null);
+      const pkFin = pkUnique ? null : (document.getElementById('reportPkFin').value.trim() || null);
+      const pkUniqueVal = pkUnique ? (document.getElementById('reportPkUnique').value.trim() || null) : null;
+      const longueur = document.getElementById('reportLongueur').value.trim() || null;
+      const aideTopo = document.getElementById('reportAideTopo').value.trim() || null;
+      const observations = document.getElementById('reportObservations').value.trim() || null;
+      const typeTravauxAutre = document.getElementById('reportTravauxAutre').value.trim() || null;
+
+      const travaux = TYPE_TRAVAUX.find(t => t.id === SELECTED_TRAVAUX_ID);
+
+      const btn = document.getElementById('reportBtn');
+      btn.disabled = true;
+      btn.textContent = 'Envoi...';
+
       try {
-        const pkUniqueCheck = document.getElementById('pkUniqueCheck').checked;
+        // Build tasks with PK from global level per task (or from form if not per-task)
+        const tachesPayload = TACHES.map(t => ({
+          type_tache: t.type,
+          statut_id: t.statut_id || null,
+          statut_autre: t.statut_autre || null,
+          pk_debut: t.pk_debut || pkDebut || null,
+          pk_fin: t.pk_fin || pkFin || null,
+          pk_unique: t.pk_unique || pkUniqueVal || null,
+          longueur: t.longueur || longueur || null,
+          aide_topo: t.aide_topo || aideTopo || null,
+          description: t.description || null,
+        }));
+
         const body = {
           type_travaux_id: SELECTED_TRAVAUX_ID,
-          pk_debut: pkUniqueCheck ? null : (document.getElementById('reportPkDebut').value || null),
-          pk_fin: pkUniqueCheck ? null : (document.getElementById('reportPkFin').value || null),
-          pk_unique: pkUniqueCheck ? document.getElementById('reportPkUnique').value : null,
-          observations: document.getElementById('reportObservations').value || null,
-          taches: TACHES.map(t => ({
-            type_tache: t.type,
-            type_implantation_id: t.implantationId || null,
-            type_reglage_id: t.reglageId || null,
-            description: t.description || null
-          }))
+          type_travaux_autre: typeTravauxAutre,
+          observations: observations,
+          aide_topo: aideTopo,
+          taches: tachesPayload,
         };
-        await apiCall('POST', '/reports/', body);
-        toast('Rapport créé avec succès !');
-        navigate('home');
-        loadRecentReports();
+
+        const report = await apiCall('POST', '/reports/', body);
+
+        // Upload pending files for each task
+        for (let i = 0; i < TACHES.length; i++) {
+          const t = TACHES[i];
+          if (t._pendingFiles && t._pendingFiles.length > 0 && report.taches && report.taches[i]) {
+            const tacheId = report.taches[i].id;
+            for (const file of t._pendingFiles) {
+              const fd = new FormData();
+              fd.append('file', file);
+              try {
+                await apiUpload('POST', '/reports/' + report.id + '/taches/' + tacheId + '/upload', fd);
+              } catch(e) {
+                console.error('Upload file error:', e);
+              }
+            }
+          }
+        }
+
+        toast('Rapport enregistré !');
+        await loadDashboard();
+        showScreen('homeScreen');
       } catch(e) {
         showError('reportError', e.message);
-      } finally {
-        sujetBtn.disabled = false; sujetBtn.textContent = 'Enregistrer le rapport';
+        btn.disabled = false;
+        btn.textContent = 'Enregistrer le rapport';
       }
     }
 
@@ -575,27 +701,67 @@
       try {
         const reports = await apiCall('GET', '/reports/');
         const container = document.getElementById('reportsList');
-        if (!reports?.length) {
-          container.innerHTML = '<p class="text-gray-400 text-center py-8">Aucun rapport</p>';
+        if (!reports || reports.length === 0) {
+          container.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">Aucun rapport</p>';
           return;
         }
-        container.innerHTML = reports.map(r => `
-          <div class="card p-4 cursor-pointer hover:shadow-lg" onclick="viewReport(${r.id})">
-            <div class="flex justify-between items-start">
-              <div>
-                <p class="font-semibold">${r.user_name || 'Rapport #'+r.id}</p>
-                <p class="text-sm text-gray-500">PK: ${r.pk_unique || r.pk_debut || 'N/A'} ${r.pk_fin ? '- '+r.pk_fin : ''}</p>
-                <p class="text-xs text-gray-400 mt-1">${r.date||''} • ${r.taches?.length||0} tâche(s)</p>
-              </div>
-              <span class="text-xs text-gray-400">${r.observations ? r.observations.substring(0,30)+(r.observations.length>30?'...':'') : ''}</span>
-            </div>
-          </div>
-        `).join('');
-      } catch(e) { toast('Erreur: '+e.message, 'bg-red-600'); }
+        container.innerHTML = reports.map(r => {
+          const taches = r.taches || [];
+          const pkInfo = taches.map(t => t.pk_unique || t.pk_debut || '').filter(Boolean).join(', ');
+          const travaux = TYPE_TRAVAUX.find(t => t.id === r.type_travaux_id);
+          return '<div class="card p-3 cursor-pointer hover:shadow-md" onclick="viewReport(' + r.id + ')">' +
+            '<div class="flex justify-between items-center">' +
+            '<div><p class="font-semibold text-sm">' + (r.user_name || '') + '</p>' +
+            '<p class="text-xs text-gray-500">' + (travaux ? travaux.nom : '') + ' | ' + (pkInfo || 'N/A') + '</p></div>' +
+            '<div class="text-right"><span class="text-xs text-gray-400">' + (r.date ? r.date.substring(0, 10) : '') + '</span>' +
+            '<p class="text-xs text-gray-500">' + taches.length + ' tâche(s)</p></div></div></div>';
+        }).join('');
+      } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
     }
 
-    function viewReport(id) {
-      toast('Détail du rapport #' + id);
+    // ========== REPORT DETAIL ==========
+    async function viewReport(id) {
+      try {
+        const report = await apiCall('GET', '/reports/' + id);
+        const travaux = TYPE_TRAVAUX.find(t => t.id === report.type_travaux_id);
+        const container = document.getElementById('reportDetailContent');
+
+        let html = '<div class="card p-4 mb-3">' +
+          '<p class="text-sm"><strong>Date:</strong> ' + (report.date ? report.date.substring(0, 10) : '') + '</p>' +
+          '<p class="text-sm"><strong>Travaux:</strong> ' + (travaux ? travaux.nom : '') + '</p>' +
+          '<p class="text-sm"><strong>Auteur:</strong> ' + (report.user_name || '') + '</p>' +
+          (report.observations ? '<p class="text-sm"><strong>Observations:</strong> ' + report.observations + '</p>' : '') +
+          '</div>';
+
+        (report.taches || []).forEach((t, i) => {
+          html += '<div class="card p-3 mb-2 border-l-4 border-primary">' +
+            '<p class="font-semibold text-sm">Tâche ' + (i + 1) + ': ' + t.type_tache + '</p>' +
+            '<p class="text-xs text-gray-600">Statut: ' + (t.statut_autre || '(selection)') + '</p>' +
+            '<p class="text-xs text-gray-600">PK: ' + (t.pk_unique || t.pk_debut || '') + (t.pk_fin ? ' - ' + t.pk_fin : '') + '</p>' +
+            (t.longueur ? '<p class="text-xs text-gray-600">Longueur: ' + t.longueur + ' m</p>' : '') +
+            (t.aide_topo ? '<p class="text-xs text-gray-600">Aide topo: ' + t.aide_topo + '</p>' : '') +
+            (t.description ? '<p class="text-xs text-gray-600">Description: ' + t.description + '</p>' : '');
+
+          // Files
+          if (t.fichiers && t.fichiers.length > 0) {
+            html += '<div class="mt-2"><p class="text-xs font-semibold mb-1">Pièces jointes:</p>';
+            t.fichiers.forEach(f => {
+              const fileUrl = API + '/uploads/' + f.chemin_fichier;
+              const ext = (f.nom_fichier || '').split('.').pop().toLowerCase();
+              if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+                html += '<a href="' + fileUrl + '" target="_blank"><img src="' + fileUrl + '" class="w-20 h-20 object-cover rounded-lg inline-block mr-1 mb-1"></a>';
+              } else {
+                html += '<a href="' + fileUrl + '" target="_blank" class="text-xs text-primary underline block">' + f.nom_fichier + '</a>';
+              }
+            });
+            html += '</div>';
+          }
+          html += '</div>';
+        });
+
+        container.innerHTML = html;
+        showScreen('reportDetailScreen');
+      } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
     }
 
     // ========== RECEPTIONS ==========
@@ -603,103 +769,134 @@
       try {
         const receptions = await apiCall('GET', '/receptions/');
         const container = document.getElementById('receptionsList');
-        if (!receptions?.length) {
-          container.innerHTML = '<p class="text-gray-400 text-center py-8">Aucune réception</p>';
+        if (!receptions || receptions.length === 0) {
+          container.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">Aucune réception</p>';
           return;
         }
-        container.innerHTML = receptions.map(r => `
-          <div class="card p-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="w-2 h-2 rounded-full ${r.mdc_signee ? 'bg-green-500' : 'bg-orange-500'}"></span>
-              <span class="font-semibold">${r.type_travaux}</span>
-              <span class="text-xs px-2 py-0.5 rounded-full ${r.mdc_signee ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">${r.mdc_signee ? 'Signé MDC' : 'En attente'}</span>
-            </div>
-            <p class="text-sm text-gray-500">PK: ${r.pk || 'N/A'}</p>
-            <p class="text-xs text-gray-400">${r.date_provisoire ? r.date_provisoire.substring(0,10) : ''}</p>
-          </div>
-        `).join('');
-      } catch(e) { toast('Erreur: '+e.message, 'bg-red-600'); }
+        container.innerHTML = receptions.map(r => {
+          const photos = r.photos ? JSON.parse(r.photos) : [];
+          const rapports = r.rapport_implantation ? JSON.parse(r.rapport_implantation) : [];
+          return '<div class="card p-3 mb-2">' +
+            '<div class="flex justify-between items-start">' +
+            '<div><p class="font-semibold text-sm">' + r.type_travaux + '</p>' +
+            '<p class="text-xs text-gray-500">PK: ' + (r.pk || 'N/A') + '</p></div>' +
+            '<span class="chip ' + (r.mdc_signee ? 'chip-green' : 'chip-orange') + '">' + (r.mdc_signee ? 'Signé MDC' : 'Provisoire') + '</span></div>' +
+            (r.description ? '<p class="text-xs text-gray-600 mt-1">' + r.description + '</p>' : '') +
+            '<div class="flex gap-2 mt-2 text-xs text-gray-500">' +
+            '<span>' + photos.length + ' photo(s)</span>' +
+            '<span>' + rapports.length + ' rapport(s)</span>' +
+            '</div>' +
+            (r.mdc_signee && r.fichier_signee ? '<div class="mt-2"><a href="' + API + '/uploads/' + r.fichier_signee + '" target="_blank" class="text-xs text-primary underline">Voir document signé</a></div>' : '') +
+            (r.mdc_signee ? '' :
+              '<div class="mt-2 flex gap-2">' +
+              '<input type="file" accept="image/*" multiple onchange="uploadReceptionPhotos(' + r.id + ', this.files)" class="text-xs">' +
+              (CURRENT_USER && CURRENT_USER.role === 'super_admin' ? '<input type="file" accept=".pdf,.jpg,.png" onchange="signReceptionMDC(' + r.id + ', this.files)" class="text-xs">' : '') +
+              '</div>') +
+            '</div>';
+        }).join('');
+      } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
+    }
+
+    async function uploadReceptionPhotos(id, files) {
+      if (!files || files.length === 0) return;
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+          await apiUpload('POST', '/receptions/' + id + '/upload-photo', fd);
+        } catch(e) { toast('Erreur photo: ' + e.message, 'bg-red-600'); }
+      }
+      toast('Photos uploadées');
+      loadReceptions();
+    }
+
+    async function signReceptionMDC(id, files) {
+      if (!files || files.length === 0) return;
+      const fd = new FormData();
+      fd.append('file', files[0]);
+      try {
+        await apiUpload('POST', '/receptions/' + id + '/sign-mdc', fd);
+        toast('Document signé par MDC enregistré');
+        loadReceptions();
+      } catch(e) { toast('Erreur signature: ' + e.message, 'bg-red-600'); }
     }
 
     // ========== ADMIN ==========
     async function loadAdmin() {
-      if (CURRENT_USER?.role !== 'super_admin') return toast('Accès non autorisé', 'bg-red-600');
+      if (!CURRENT_USER || CURRENT_USER.role !== 'super_admin') {
+        return toast('Accès non autorisé', 'bg-red-600');
+      }
       try {
         const [summary, users, pending] = await Promise.all([
           apiCall('GET', '/reports/admin/summary'),
           apiCall('GET', '/users/'),
           apiCall('GET', '/receptions/pending-mdc')
         ]);
-        document.getElementById('adminStats').innerHTML = `
-          <div class="card p-3 text-center"><p class="text-2xl font-bold text-primary">${summary.total_reports||0}</p><p class="text-xs text-gray-500">Rapports</p></div>
-          <div class="card p-3 text-center"><p class="text-2xl font-bold text-teal-600">${summary.total_files||0}</p><p class="text-xs text-gray-500">Fichiers</p></div>
-          <div class="card p-3 text-center"><p class="text-2xl font-bold text-orange-600">${summary.receptions_pending_mdc||0}</p><p class="text-xs text-gray-500">MDC en attente</p></div>
-        `;
-        document.getElementById('adminUsers').innerHTML = users.map(u => `
-          <div class="card p-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-white font-bold text-sm">${u.nom[0]}${u.prenoms[0]}</div>
-              <div>
-                <p class="font-semibold text-sm">${u.nom} ${u.prenoms}</p>
-                <p class="text-xs text-gray-500">${u.fonction} • ${u.matricule}</p>
-              </div>
-            </div>
-            <span class="text-xs px-2 py-1 rounded-full ${u.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${u.is_active ? 'Actif' : 'Inactif'}</span>
-          </div>
-        `).join('');
-        if (pending.pending?.length) {
-          toast(`${pending.pending.length} signature(s) MDC en attente (>48h)`, 'bg-orange-600');
-        }
-      } catch(e) { toast('Erreur: '+e.message, 'bg-red-600'); }
+
+        document.getElementById('adminStats').innerHTML =
+          '<div class="stat-card"><p class="stat-label">Utilisateurs</p><p class="stat-value">' + (summary.total_users || 0) + '</p></div>' +
+          '<div class="stat-card"><p class="stat-label">Rapports</p><p class="stat-value">' + (summary.total_reports || 0) + '</p></div>';
+
+        document.getElementById('adminUsers').innerHTML = (users || []).map(u =>
+          '<div class="card p-3 flex justify-between items-center">' +
+          '<div><p class="font-semibold text-sm">' + u.nom + ' ' + u.prenoms + '</p>' +
+          '<p class="text-xs text-gray-500">' + u.fonction + ' | ' + u.email + '</p></div>' +
+          '<span class="chip ' + (u.role === 'super_admin' ? 'chip-primary' : 'chip-gray') + '">' + (u.role === 'super_admin' ? 'Admin' : 'Membre') + '</span></div>'
+        ).join('');
+
+        document.getElementById('adminPendingMDC').innerHTML = (pending.pending && pending.pending.length > 0) ?
+          pending.pending.map(p =>
+            '<div class="card p-3 flex justify-between items-center">' +
+            '<div><p class="font-semibold text-sm">' + (p.type_travaux || '') + '</p>' +
+            '<p class="text-xs text-gray-500">PK: ' + (p.pk || 'N/A') + '</p></div>' +
+            '<span class="chip-orange">En attente</span></div>'
+          ).join('') :
+          '<p class="text-gray-400 text-sm text-center py-4">Aucune signature en attente</p>';
+
+        showScreen('adminScreen');
+      } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
     }
 
     // ========== SEARCH ==========
-    let searchTimeout;
-    document.getElementById('searchInput')?.addEventListener('input', function() {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(search, 500);
-    });
-
-    async function search() {
+    async function doSearch() {
       const q = document.getElementById('searchInput').value.trim();
       if (!q) return;
+
       try {
-        const data = await apiCall('GET', `/search/?q=${encodeURIComponent(q)}`);
+        const data = await apiCall('GET', '/search/?q=' + encodeURIComponent(q));
         const container = document.getElementById('searchResults');
-        let html = `<p class="text-sm text-gray-500 mb-3">${data.reports_count} rapport(s) • ${data.receptions_count} réception(s)</p>`;
-        if (data.reports?.length) {
-          html += '<h4 class="font-semibold text-sm mb-2">Rapports</h4>';
-          html += data.reports.map(r => `<div class="card p-3 mb-2"><p class="font-semibold text-sm">${r.user_name||'Rapport'}</p><p class="text-xs text-gray-500">PK: ${r.pk_unique||r.pk_debut||'N/A'}</p></div>`).join('');
+
+        let html = '';
+        if (data.reports && data.reports.length > 0) {
+          html += '<h3 class="font-bold text-sm text-gray-700 mb-2">Rapports (' + data.reports.length + ')</h3>';
+          html += data.reports.slice(0, 10).map(r =>
+            '<div class="card p-3 cursor-pointer hover:shadow-md" onclick="viewReport(' + r.id + ')">' +
+            '<p class="font-semibold text-sm">' + (r.user_name || '') + '</p>' +
+            '<p class="text-xs text-gray-500">' + (r.observations || '') + '</p>' +
+            '<span class="text-xs text-gray-400">' + (r.date ? r.date.substring(0, 10) : '') + '</span></div>'
+          ).join('');
         }
-        if (data.receptions?.length) {
-          html += '<h4 class="font-semibold text-sm mb-2 mt-3">Réceptions</h4>';
-          html += data.receptions.map(r => `<div class="card p-3 mb-2"><p class="font-semibold text-sm">${r.type_travaux} - PK: ${r.pk||'N/A'}</p><span class="text-xs ${r.mdc_signee ? 'text-green-600' : 'text-orange-600'}">${r.mdc_signee ? 'Signé MDC' : 'En attente'}</span></div>`).join('');
+        if (data.receptions && data.receptions.length > 0) {
+          html += '<h3 class="font-bold text-sm text-gray-700 mb-2 mt-4">Réceptions (' + data.receptions.length + ')</h3>';
+          html += data.receptions.slice(0, 10).map(r =>
+            '<div class="card p-3">' +
+            '<p class="font-semibold text-sm">' + r.type_travaux + '</p>' +
+            '<p class="text-xs text-gray-500">PK: ' + (r.pk || 'N/A') + '</p>' +
+            '<span class="chip ' + (r.mdc_signee ? 'chip-green' : 'chip-orange') + '">' + (r.mdc_signee ? 'Signé' : 'Provisoire') + '</span></div>'
+          ).join('');
         }
-        if (!data.reports?.length && !data.receptions?.length) html += '<p class="text-gray-400 text-center py-8">Aucun résultat</p>';
+        if (!html) html = '<p class="text-gray-400 text-sm text-center py-8">Aucun résultat</p>';
         container.innerHTML = html;
-      } catch(e) { toast('Erreur: '+e.message, 'bg-red-600'); }
+      } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
     }
 
-    // Init
-    init();
-  </script>
-</body>
-</html>
-  <!-- Settings -->
-  <div id="settingsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden" onclick="if(event.target===this)this.classList.add('hidden')">
-    <div class="bg-white rounded-2xl p-6 m-4 max-w-sm w-full">
-      <h3 class="font-bold text-lg mb-4">Configuration</h3>
-      <label class="block text-sm font-medium mb-1">URL du backend</label>
-      <input id="backendUrlInput" class="input-field mb-4" placeholder="http://localhost:8000" value="">
-      <button onclick="saveBackendUrl()" class="btn-primary w-full">Enregistrer</button>
-    </div>
-  </div>
-  <script>
+    // ========== SETTINGS ==========
     function toggleSettings() {
       const modal = document.getElementById('settingsModal');
       document.getElementById('backendUrlInput').value = localStorage.getItem('topo_api_url') || DEFAULT_API;
       modal.classList.toggle('hidden');
     }
+
     function saveBackendUrl() {
       const url = document.getElementById('backendUrlInput').value.trim();
       if (url) localStorage.setItem('topo_api_url', url);
@@ -707,4 +904,9 @@
       document.getElementById('settingsModal').classList.add('hidden');
       toast('URL sauvegardée. Reconnectez-vous.');
     }
+
+    // Init
+    init();
   </script>
+</body>
+</html>
