@@ -35,9 +35,6 @@
     .chip-gray { @apply chip bg-gray-200 text-gray-700 hover:bg-gray-300; }
     .chip-green { @apply chip bg-green-100 text-green-700; }
     .chip-orange { @apply chip bg-orange-100 text-orange-700; }
-    .stat-card { @apply card p-4 text-center; }
-    .stat-label { @apply text-xs text-gray-500 uppercase tracking-wide; }
-    .stat-value { @apply text-2xl font-bold text-primary mt-1; }
     label { @apply block text-sm font-medium text-gray-700 mb-1; }
     @media (max-width: 640px) { .card { @apply p-4; } }
   </style>
@@ -52,7 +49,7 @@
       </div>
     </div>
 
-    <!-- ======== LOGIN ======== -->
+    <!-- Login -->
     <div id="loginScreen" class="hidden">
       <div class="card p-6 max-w-sm mx-auto mt-16">
         <div class="text-center mb-6">
@@ -69,13 +66,11 @@
         <p class="text-center mt-4 text-sm text-gray-500">
           Pas de compte ? <a href="#" onclick="showScreen('registerScreen');return false" class="text-primary font-semibold">S'inscrire</a>
         </p>
-        <p class="text-center mt-2 text-xs text-gray-400">
-          <a href="#" onclick="toggleSettings();return false" class="underline">Configuration serveur</a>
-        </p>
+        <p class="text-center mt-2 text-xs text-gray-400"><a href="#" onclick="toggleSettings();return false" class="underline">Configuration serveur</a></p>
       </div>
     </div>
 
-    <!-- ======== REGISTER ======== -->
+    <!-- Register -->
     <div id="registerScreen" class="hidden">
       <div class="card p-6 max-w-sm mx-auto mt-8">
         <h2 class="text-xl font-bold text-primary mb-4 text-center">Créer un compte</h2>
@@ -85,7 +80,7 @@
           <input id="regPrenoms" class="input" placeholder="Prénoms">
         </div>
         <input id="regMatricule" class="input mb-3" placeholder="Matricule">
-        <input id="regEmail" type="email" class="input mb-3" placeholder="Email" autocomplete="email">
+        <input id="regEmail" type="email" class="input mb-3" placeholder="Email">
         <input id="regPassword" type="password" class="input mb-3" placeholder="Mot de passe">
         <select id="regFonction" class="input mb-3">
           <option value="">Fonction</option>
@@ -109,7 +104,7 @@
       </div>
     </div>
 
-    <!-- ======== DASHBOARD ======== -->
+    <!-- Dashboard -->
     <div id="homeScreen" class="hidden">
       <div class="flex items-center justify-between mb-4">
         <div>
@@ -125,36 +120,20 @@
           <button onclick="logout()" class="btn-sm btn-danger">✕</button>
         </div>
       </div>
-
-      <!-- Quick Stats -->
-      <div id="dashboardStats" class="grid grid-cols-3 gap-2 mb-4 hidden">
-        <div class="stat-card"><p class="stat-label">Rapports</p><p class="stat-value" id="statReports">0</p></div>
-        <div class="stat-card"><p class="stat-label">Tâches</p><p class="stat-value" id="statTaches">0</p></div>
-        <div class="stat-card"><p class="stat-label">PK traités</p><p class="stat-value" id="statPK">0</p></div>
+      <div class="flex gap-2 mb-4">
+        <button onclick="loadReportForm();showScreen('reportScreen')" class="btn-primary text-sm flex-1">+ Nouveau rapport</button>
+        <button onclick="navigate('reports')" class="btn-outline text-sm flex-1">Rapports</button>
       </div>
-
-      <!-- MDC Alert -->
+      <button id="adminBtn" onclick="navigate('admin')" class="btn-outline w-full text-sm mb-4 hidden">Administration</button>
       <div id="mdcAlert" class="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 hidden">
         <p class="text-orange-700 text-sm font-semibold">⚠️ Signatures MDC en attente</p>
         <p id="mdcCount" class="text-orange-600 text-xs mt-1"></p>
-        <button onclick="navigate('receptions')" class="btn-sm bg-orange-500 text-white mt-2 rounded-lg">Voir les réceptions</button>
       </div>
-
-      <!-- Buttons -->
-      <div class="grid grid-cols-2 gap-3 mb-4">
-        <button onclick="loadReportForm();showScreen('reportScreen')" class="btn-primary text-sm">+ Nouveau rapport</button>
-        <button onclick="navigate('reports')" class="btn-outline text-sm">Mes rapports</button>
-      </div>
-      <button id="adminBtn" onclick="navigate('admin')" class="btn-outline w-full text-sm mb-4 hidden">Administration</button>
-
-      <!-- Recent Reports -->
       <h2 class="font-bold text-gray-700 text-sm mb-2">Rapports récents</h2>
-      <div id="recentReports" class="space-y-2">
-        <p class="text-gray-400 text-sm text-center py-6">Aucun rapport</p>
-      </div>
+      <div id="recentReports" class="space-y-2"><p class="text-gray-400 text-sm text-center py-6">Aucun rapport</p></div>
     </div>
 
-    <!-- ======== REPORT FORM ======== -->
+    <!-- Report Form -->
     <div id="reportScreen" class="hidden">
       <div class="flex items-center mb-4">
         <button onclick="showScreen('homeScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
@@ -170,42 +149,21 @@
         <option value="">Sélectionner...</option>
       </select>
 
-      <div id="reportTravauxAutreGroup" class="hidden mb-3">
-        <label>Précisez le type de travaux</label>
-        <input id="reportTravauxAutre" class="input" placeholder="Autre type...">
-      </div>
-
-      <label>Aide topo (chef d'équipe)</label>
-      <input id="reportAideTopo" class="input mb-3" placeholder="Nom de l'aide topo">
-
       <div class="flex items-center gap-2 mb-3">
         <input type="checkbox" id="pkUniqueCheck" onchange="togglePKMode()">
         <label class="mb-0">PK unique (au lieu de début/fin)</label>
       </div>
-
       <div id="pkRangeGroup" class="grid grid-cols-2 gap-2 mb-3">
-        <div>
-          <label>PK Début</label>
-          <input id="reportPkDebut" class="input" placeholder="313+080">
-        </div>
-        <div>
-          <label>PK Fin</label>
-          <input id="reportPkFin" class="input" placeholder="313+280">
-        </div>
+        <div><label>PK Début</label><input id="reportPkDebut" class="input" placeholder="313+080"></div>
+        <div><label>PK Fin</label><input id="reportPkFin" class="input" placeholder="313+280"></div>
       </div>
       <div id="pkUniqueGroup" class="hidden mb-3">
-        <label>PK Unique</label>
-        <input id="reportPkUnique" class="input" placeholder="PK31+500">
-      </div>
-      <div class="mb-3">
-        <label>Longueur (m)</label>
-        <input id="reportLongueur" class="input" placeholder="200.00">
+        <label>PK Unique</label><input id="reportPkUnique" class="input" placeholder="PK31+500">
       </div>
 
       <label>Observations</label>
       <textarea id="reportObservations" class="input mb-4" rows="2" placeholder="Observations générales..."></textarea>
 
-      <!-- Tasks -->
       <div class="flex items-center justify-between mb-2">
         <h3 class="font-bold text-gray-700 text-sm">Tâches</h3>
         <button onclick="addTache()" class="btn-sm bg-green-600 text-white">+ Ajouter</button>
@@ -215,7 +173,7 @@
       <button onclick="submitReport()" id="reportBtn" class="btn-primary w-full">Enregistrer le rapport</button>
     </div>
 
-    <!-- ======== REPORTS LIST ======== -->
+    <!-- Reports List -->
     <div id="reportsScreen" class="hidden">
       <div class="flex items-center mb-4">
         <button onclick="showScreen('homeScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
@@ -224,7 +182,7 @@
       <div id="reportsList" class="space-y-2"></div>
     </div>
 
-    <!-- ======== REPORT DETAIL ======== -->
+    <!-- Report Detail -->
     <div id="reportDetailScreen" class="hidden">
       <div class="flex items-center mb-4">
         <button onclick="showScreen('reportsScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
@@ -233,7 +191,7 @@
       <div id="reportDetailContent"></div>
     </div>
 
-    <!-- ======== RECEPTIONS ======== -->
+    <!-- Receptions -->
     <div id="receptionsScreen" class="hidden">
       <div class="flex items-center mb-4">
         <button onclick="showScreen('homeScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
@@ -242,7 +200,7 @@
       <div id="receptionsList" class="space-y-2"></div>
     </div>
 
-    <!-- ======== ADMIN ======== -->
+    <!-- Admin -->
     <div id="adminScreen" class="hidden">
       <div class="flex items-center mb-4">
         <button onclick="showScreen('homeScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
@@ -255,7 +213,7 @@
       <div id="adminPendingMDC" class="space-y-2"></div>
     </div>
 
-    <!-- ======== SEARCH ======== -->
+    <!-- Search -->
     <div id="searchScreen" class="hidden">
       <div class="flex items-center mb-4">
         <button onclick="showScreen('homeScreen')" class="p-2 hover:bg-gray-200 rounded-full">&larr;</button>
@@ -271,7 +229,6 @@
   <div id="settingsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden" onclick="if(event.target===this)this.classList.add('hidden')">
     <div class="bg-white rounded-2xl p-6 m-4 max-w-sm w-full" onclick="event.stopPropagation()">
       <h3 class="font-bold text-lg mb-4">Configuration serveur</h3>
-      <label class="block text-sm font-medium mb-1">URL du backend</label>
       <input id="backendUrlInput" class="input mb-4" placeholder="https://...">
       <button onclick="saveBackendUrl()" class="btn-primary w-full">Enregistrer</button>
     </div>
@@ -283,27 +240,17 @@
   </div>
 
   <script>
-    // ========== CONFIG ==========
     const DEFAULT_API = 'https://topo-app-api.onrender.com';
-    const API = (() => {
-      const saved = localStorage.getItem('topo_api_url');
-      if (saved) return saved;
-      return DEFAULT_API;
-    })();
-
+    const API = (() => { const s = localStorage.getItem('topo_api_url'); return s || DEFAULT_API; })();
     let TOKEN = localStorage.getItem('topo_token');
     let CURRENT_USER = null;
     let TYPE_TRAVAUX = [];
-    let STATUTS = [];
+    let IMPLANTATIONS = [];
+    let REGLAGES = [];
     let TACHES = [];
-    let SELECTED_TRAVAUX_ID = null;
+    const TACHE_TYPES = ['Levé topographique', 'Implantation', 'Réglage', 'Réception', 'Appro', 'Suivi'];
 
-    const TACHE_TYPES = [
-      'Levé topographique', 'Implantation', 'Réglage', 'Réception', 'Appro', 'Suivi'
-    ];
-
-    // ========== HELPERS ==========
-    function toast(msg, color = 'bg-green-600') {
+    function toast(msg, color='bg-green-600') {
       const el = document.getElementById('toastContent');
       el.textContent = msg;
       el.className = color + ' text-white px-5 py-3 rounded-xl shadow-lg toast';
@@ -325,40 +272,27 @@
       showScreen(page + 'Screen');
     }
 
-    function showError(id, msg) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.classList.remove('hidden');
-    }
-
     function toggleEquip(el) {
       el.classList.toggle('chip-gray');
       el.classList.toggle('bg-primary');
       el.classList.toggle('text-white');
     }
 
-    // ========== API ==========
     async function apiCall(method, path, body = null) {
       const headers = { 'Content-Type': 'application/json' };
       if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
-
       const opts = { method, headers };
       if (body) opts.body = JSON.stringify(body);
-
       const res = await fetch(API + path, opts);
       if (!res.ok) {
         let msg = 'Erreur ' + res.status;
-        try {
-          const err = await res.json();
-          msg = err.detail || JSON.stringify(err);
-        } catch(e) {}
+        try { const err = await res.json(); msg = err.detail || JSON.stringify(err); } catch(e) {}
         throw new Error(msg);
       }
-      if (res.status === 204) return null;
-      return res.json();
+      return res.status === 204 ? null : res.json();
     }
 
-    async function apiUpload(method, path, formData) {
+    async function apiFormData(method, path, formData) {
       const headers = {};
       if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
       const res = await fetch(API + path, { method, headers, body: formData });
@@ -370,12 +304,11 @@
       return res.json();
     }
 
-    // ========== AUTH ==========
+    // Auth
     async function login() {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
       if (!email || !password) return showError('loginError', 'Remplissez tous les champs');
-
       try {
         const data = await apiCall('POST', '/auth/login', { email, password });
         TOKEN = data.access_token;
@@ -384,9 +317,7 @@
         toast('Connecté: ' + CURRENT_USER.prenoms + ' ' + CURRENT_USER.nom);
         await loadDashboard();
         showScreen('homeScreen');
-      } catch(e) {
-        showError('loginError', e.message);
-      }
+      } catch(e) { showError('loginError', e.message); }
     }
 
     async function register() {
@@ -398,40 +329,37 @@
       const fonction = document.getElementById('regFonction').value;
       if (!nom || !prenoms || !matricule || !email || !password || !fonction)
         return showError('registerError', 'Remplissez tous les champs');
-
       const equipements = [];
       document.querySelectorAll('#regEquipements > span').forEach(el => {
         if (!el.classList.contains('chip-gray')) equipements.push(el.textContent);
       });
-
       try {
         await apiCall('POST', '/auth/register', { nom, prenoms, matricule, email, password, fonction, equipements });
         toast('Compte créé ! Connectez-vous.');
         showScreen('loginScreen');
-      } catch(e) {
-        showError('registerError', e.message);
-      }
+      } catch(e) { showError('registerError', e.message); }
     }
 
     function logout() {
-      TOKEN = null;
-      CURRENT_USER = null;
+      TOKEN = null; CURRENT_USER = null;
       localStorage.removeItem('topo_token');
       showScreen('loginScreen');
     }
 
-    // ========== DASHBOARD ==========
+    function showError(id, msg) {
+      document.getElementById(id).textContent = msg;
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    // Dashboard
     async function init() {
-      // Hide all screens, show loading
       if (TOKEN) {
         try {
-          const user = await apiCall('GET', '/users/me');
-          CURRENT_USER = user;
+          CURRENT_USER = await apiCall('GET', '/users/me');
           await loadDashboard();
           showScreen('homeScreen');
           return;
         } catch(e) {
-          // Token expired
           localStorage.removeItem('topo_token');
           TOKEN = null;
         }
@@ -445,31 +373,19 @@
       const roleLabel = CURRENT_USER.role === 'super_admin' ? ' (Admin)' : '';
       info.textContent = CURRENT_USER.prenoms + ' ' + CURRENT_USER.nom + roleLabel;
 
-      if (CURRENT_USER.role === 'super_admin') {
+      if (CURRENT_USER.role === 'super_admin')
         document.getElementById('adminBtn').classList.remove('hidden');
-        document.getElementById('dashboardStats').classList.remove('hidden');
-        try {
-          const summary = await apiCall('GET', '/reports/admin/summary');
-          document.getElementById('statReports').textContent = summary.total_reports || 0;
-          document.getElementById('statTaches').textContent = summary.total_taches || 0;
-          document.getElementById('statPK').textContent = summary.pending_mdc || 0;
-        } catch(e) {}
-      }
 
-      // Check pending MDC
       try {
         const data = await apiCall('GET', '/receptions/pending-mdc');
         if (data.pending && data.pending.length > 0) {
-          document.getElementById('mdcCount').textContent = data.pending.length + ' réception(s) en attente de signature';
+          document.getElementById('mdcCount').textContent = data.pending.length + ' réception(s) en attente';
           document.getElementById('mdcAlert').classList.remove('hidden');
           document.getElementById('mdcBadge').textContent = data.pending.length;
           document.getElementById('mdcBadge').classList.remove('hidden');
-        } else {
-          document.getElementById('mdcBadge').classList.add('hidden');
         }
       } catch(e) {}
 
-      // Load recent reports
       await loadRecentReports();
     }
 
@@ -478,30 +394,26 @@
         const reports = await apiCall('GET', '/reports/');
         const container = document.getElementById('recentReports');
         if (!reports || reports.length === 0) {
-          container.innerHTML = '<p class="text-gray-400 text-sm text-center py-6">Aucun rapport pour le moment</p>';
+          container.innerHTML = '<p class="text-gray-400 text-sm text-center py-6">Aucun rapport</p>';
           return;
         }
         container.innerHTML = reports.slice(0, 10).map(r => {
-          const taches = r.taches || [];
-          const pkInfo = taches.map(t => t.pk_unique || t.pk_debut || '').filter(Boolean).join(', ');
+          const pk = r.pk_unique || r.pk_debut || '';
           return '<div class="card p-3 flex justify-between items-center cursor-pointer hover:shadow-md" onclick="viewReport(' + r.id + ')">' +
             '<div><p class="font-semibold text-sm">' + (r.user_name || 'Rapport') + '</p>' +
-            '<p class="text-xs text-gray-500">' + (pkInfo || 'N/A') + '</p></div>' +
-            '<span class="text-xs text-gray-400">' + (r.date ? r.date.substring(0, 10) : '') + '</span></div>';
+            '<p class="text-xs text-gray-500">PK: ' + (pk || 'N/A') + '</p></div>' +
+            '<span class="text-xs text-gray-400">' + (r.date ? r.date.substring(0,10) : '') + '</span></div>';
         }).join('');
       } catch(e) { console.error(e); }
     }
 
-    // ========== REPORT FORM ==========
+    // Report Form
     async function loadReportForm() {
-      SELECTED_TRAVAUX_ID = null;
       TACHES = [];
-      document.getElementById('reportDate').value = new Date().toISOString().substring(0, 10);
+      document.getElementById('reportDate').valueAsDate = new Date();
       document.getElementById('reportPkDebut').value = '';
       document.getElementById('reportPkFin').value = '';
       document.getElementById('reportPkUnique').value = '';
-      document.getElementById('reportLongueur').value = '';
-      document.getElementById('reportAideTopo').value = '';
       document.getElementById('reportObservations').value = '';
       document.getElementById('reportError').classList.add('hidden');
       document.getElementById('pkUniqueCheck').checked = false;
@@ -510,48 +422,29 @@
 
       try {
         TYPE_TRAVAUX = await apiCall('GET', '/choices/travaux');
-        STATUTS = await apiCall('GET', '/choices/statuts');
+        IMPLANTATIONS = await apiCall('GET', '/choices/implantations');
+        REGLAGES = await apiCall('GET', '/choices/reglages');
 
         const sel = document.getElementById('reportTravaux');
         sel.innerHTML = '<option value="">Sélectionner...</option>';
         TYPE_TRAVAUX.forEach(t => {
-          sel.innerHTML += '<option value="' + t.id + '">' + t.nom + '</option>';
+          sel.innerHTML += '<option value="' + t.id + '">' + t.nom + ' (' + t.categorie + ')</option>';
         });
         renderTaches();
-      } catch(e) {
-        toast('Erreur chargement: ' + e.message, 'bg-red-600');
-      }
+      } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
     }
 
-    function onTravauxChange() {
-      const id = parseInt(document.getElementById('reportTravaux').value);
-      SELECTED_TRAVAUX_ID = id || null;
-      const travaux = TYPE_TRAVAUX.find(t => t.id === id);
-      document.getElementById('reportTravauxAutreGroup').classList.toggle('hidden', !travaux || travaux.nom !== 'Autres');
-      // Re-render taches with new statuts
-      renderTaches();
-    }
+    function onTravauxChange() {}
 
     function togglePKMode() {
-      const checked = document.getElementById('pkUniqueCheck').checked;
-      document.getElementById('pkRangeGroup').classList.toggle('hidden', checked);
-      document.getElementById('pkUniqueGroup').classList.toggle('hidden', !checked);
-    }
-
-    function getStatutsForTravaux() {
-      if (!SELECTED_TRAVAUX_ID) return STATUTS;
-      const filtered = STATUTS.filter(s => s.travaux_id === null || s.travaux_id === SELECTED_TRAVAUX_ID);
-      if (filtered.length === 0) return STATUTS;
-      return filtered;
+      const c = document.getElementById('pkUniqueCheck').checked;
+      document.getElementById('pkRangeGroup').classList.toggle('hidden', c);
+      document.getElementById('pkUniqueGroup').classList.toggle('hidden', !c);
     }
 
     function addTache() {
-      TACHES.push({ type: TACHE_TYPES[0], statut_id: null, statut_autre: '', pk_debut: '', pk_fin: '', pk_unique: '', longueur: '', aide_topo: '', description: '', files: [] });
+      TACHES.push({ type: TACHE_TYPES[0], instatut: null, regstatut: null, description: '' });
       renderTaches();
-    }
-
-    function updateTache(idx, field, value) {
-      if (TACHES[idx]) TACHES[idx][field] = value;
     }
 
     function removeTache(idx) {
@@ -566,137 +459,76 @@
         return;
       }
 
-      const statuts = getStatutsForTravaux();
-
       container.innerHTML = TACHES.map((t, i) => {
-        const isUnique = document.getElementById('pkUniqueCheck').checked;
+        let extra = '';
+        if (t.type === 'Implantation') {
+          extra = '<label class="text-xs">Type d\'implantation</label>' +
+            '<select onchange="TACHES[' + i + '].instatut=parseInt(this.value)||null" class="input text-sm mb-2">' +
+            '<option value="">--</option>' +
+            IMPLANTATIONS.map(s => '<option value="' + s.id + '"' + (t.instatut === s.id ? ' selected' : '') + '>' + s.nom + '</option>').join('') +
+            '</select>';
+        } else if (t.type === 'Réglage') {
+          extra = '<label class="text-xs">Type de réglage</label>' +
+            '<select onchange="TACHES[' + i + '].regstatut=parseInt(this.value)||null" class="input text-sm mb-2">' +
+            '<option value="">--</option>' +
+            REGLAGES.map(s => '<option value="' + s.id + '"' + (t.regstatut === s.id ? ' selected' : '') + '>' + s.nom + '</option>').join('') +
+            '</select>';
+        }
+
         return '<div class="card p-3 border-l-4 border-primary">' +
           '<div class="flex justify-between items-center mb-2">' +
-          '<strong class="text-sm">Tâche ' + (i + 1) + '</strong>' +
+          '<strong class="text-sm">Tâche ' + (i+1) + '</strong>' +
           '<button onclick="removeTache(' + i + ')" class="text-red-400 hover:text-red-600 text-lg">&times;</button></div>' +
-
-          '<label class="text-xs">Type de tâche</label>' +
-          '<select onchange="updateTache(' + i + ',\'type\',this.value)" class="input text-sm mb-2">' +
-          TACHE_TYPES.map(tt => '<option value="' + tt + '"' + (t.type === tt ? ' selected' : '') + '>' + tt + '</option>').join('') +
-          '</select>' +
-
-          '<label class="text-xs">Statut</label>' +
-          '<select onchange="updateTache(' + i + ',\'statut_id\',parseInt(this.value)||null);if(this.value===\\'autre\\')document.getElementById(\\'statutAutre\\'+' + i + ').classList.remove(\\'hidden\\')" class="input text-sm mb-1">' +
-          '<option value="">--</option>' +
-          statuts.map(s => '<option value="' + s.id + '"' + (t.statut_id === s.id ? ' selected' : '') + '>' + s.nom + '</option>').join('') +
-          '<option value="autre"' + (t.statut_id === null && t.statut_autre ? ' selected' : '') + '>Autres...</option>' +
-          '</select>' +
-          '<input id="statutAutre' + i + '" onchange="updateTache(' + i + ',\'statut_autre\',this.value)" class="input text-sm mb-2' + (t.statut_id !== null && !t.statut_autre ? ' hidden' : '') + '" placeholder="Statut autre..." value="' + (t.statut_autre || '') + '">' +
-
-          '<div class="grid grid-cols-2 gap-2 mb-2">' +
-          '<div><label class="text-xs">PK ' + (isUnique ? 'Unique' : 'Début') + '</label>' +
-          '<input onchange="updateTache(' + i + ',\'' + (isUnique ? 'pk_unique' : 'pk_debut') + '\',this.value)" class="input text-sm" placeholder="313+080" value="' + (t.pk_debut || t.pk_unique || '') + '"></div>' +
-          (!isUnique ? '<div><label class="text-xs">PK Fin</label>' +
-          '<input onchange="updateTache(' + i + ',\'pk_fin\',this.value)" class="input text-sm" placeholder="313+280" value="' + (t.pk_fin || '') + '"></div>' : '') +
-          '</div>' +
-
-          '<div class="grid grid-cols-2 gap-2 mb-2">' +
-          '<div><label class="text-xs">Longueur (m)</label>' +
-          '<input onchange="updateTache(' + i + ',\'longueur\',this.value)" class="input text-sm" placeholder="200" value="' + (t.longueur || '') + '"></div>' +
-          '<div><label class="text-xs">Aide topo</label>' +
-          '<input onchange="updateTache(' + i + ',\'aide_topo\',this.value)" class="input text-sm" placeholder="Nom" value="' + (t.aide_topo || '') + '"></div>' +
-          '</div>' +
-
+          '<label class="text-xs">Type</label>' +
+          '<select onchange="TACHES[' + i + '].type=this.value;renderTaches()" class="input text-sm mb-2">' +
+          TACHE_TYPES.map(tt => '<option value="' + tt + '"' + (t.type===tt?' selected':'') + '>' + tt + '</option>').join('') + '</select>' +
+          extra +
           '<label class="text-xs">Description</label>' +
-          '<textarea onchange="updateTache(' + i + ',\'description\',this.value)" class="input text-sm" rows="1" placeholder="Description...">' + (t.description || '') + '</textarea>' +
-
-          // File upload for this task
-          '<div class="mt-2">' +
-          '<label class="text-xs">Pièces jointes</label>' +
-          '<input type="file" multiple onchange="uploadTaskFiles(' + i + ', this.files)" class="text-xs w-full">' +
-          '<div id="taskFiles_' + i + '" class="mt-1"></div></div>' +
+          '<textarea onchange="TACHES[' + i + '].description=this.value" class="input text-sm" rows="1" placeholder="Description...">' + (t.description||'') + '</textarea>' +
           '</div>';
       }).join('');
     }
 
-    async function uploadTaskFiles(idx, files) {
-      if (!files || files.length === 0) return;
-      // We need to create the report first, then upload files.
-      // Store files temporarily and upload after submit
-      const tache = TACHES[idx];
-      if (!tache._pendingFiles) tache._pendingFiles = [];
-      for (const f of files) {
-        tache._pendingFiles.push(f);
-      }
-      const container = document.getElementById('taskFiles_' + idx);
-      container.innerHTML = '<p class="text-xs text-green-600">' + tache._pendingFiles.length + ' fichier(s) sélectionné(s)</p>';
-    }
-
     async function submitReport() {
-      if (!SELECTED_TRAVAUX_ID) return showError('reportError', 'Sélectionnez un type de travaux');
+      const travauxId = parseInt(document.getElementById('reportTravaux').value);
+      if (!travauxId) return showError('reportError', 'Sélectionnez un type de travaux');
 
       const pkUnique = document.getElementById('pkUniqueCheck').checked;
-      const pkDebut = pkUnique ? null : (document.getElementById('reportPkDebut').value.trim() || null);
-      const pkFin = pkUnique ? null : (document.getElementById('reportPkFin').value.trim() || null);
-      const pkUniqueVal = pkUnique ? (document.getElementById('reportPkUnique').value.trim() || null) : null;
-      const longueur = document.getElementById('reportLongueur').value.trim() || null;
-      const aideTopo = document.getElementById('reportAideTopo').value.trim() || null;
-      const observations = document.getElementById('reportObservations').value.trim() || null;
-      const typeTravauxAutre = document.getElementById('reportTravauxAutre').value.trim() || null;
-
-      const travaux = TYPE_TRAVAUX.find(t => t.id === SELECTED_TRAVAUX_ID);
+      const pkDebut = pkUnique ? '' : document.getElementById('reportPkDebut').value.trim();
+      const pkFin = pkUnique ? '' : document.getElementById('reportPkFin').value.trim();
+      const pkUniqueVal = pkUnique ? document.getElementById('reportPkUnique').value.trim() : '';
+      const observations = document.getElementById('reportObservations').value.trim();
 
       const btn = document.getElementById('reportBtn');
-      btn.disabled = true;
-      btn.textContent = 'Envoi...';
+      btn.disabled = true; btn.textContent = 'Envoi...';
 
       try {
-        // Build tasks with PK from global level per task (or from form if not per-task)
         const tachesPayload = TACHES.map(t => ({
           type_tache: t.type,
-          statut_id: t.statut_id || null,
-          statut_autre: t.statut_autre || null,
-          pk_debut: t.pk_debut || pkDebut || null,
-          pk_fin: t.pk_fin || pkFin || null,
-          pk_unique: t.pk_unique || pkUniqueVal || null,
-          longueur: t.longueur || longueur || null,
-          aide_topo: t.aide_topo || aideTopo || null,
+          type_implantation_id: t.instatut || null,
+          type_reglage_id: t.regstatut || null,
           description: t.description || null,
         }));
 
-        const body = {
-          type_travaux_id: SELECTED_TRAVAUX_ID,
-          type_travaux_autre: typeTravauxAutre,
-          observations: observations,
-          aide_topo: aideTopo,
-          taches: tachesPayload,
-        };
+        const formData = new FormData();
+        formData.append('type_travaux_id', travauxId.toString());
+        if (pkDebut) formData.append('pk_debut', pkDebut);
+        if (pkFin) formData.append('pk_fin', pkFin);
+        if (pkUniqueVal) formData.append('pk_unique', pkUniqueVal);
+        if (observations) formData.append('observations', observations);
+        formData.append('taches_json', JSON.stringify(tachesPayload));
 
-        const report = await apiCall('POST', '/reports/', body);
-
-        // Upload pending files for each task
-        for (let i = 0; i < TACHES.length; i++) {
-          const t = TACHES[i];
-          if (t._pendingFiles && t._pendingFiles.length > 0 && report.taches && report.taches[i]) {
-            const tacheId = report.taches[i].id;
-            for (const file of t._pendingFiles) {
-              const fd = new FormData();
-              fd.append('file', file);
-              try {
-                await apiUpload('POST', '/reports/' + report.id + '/taches/' + tacheId + '/upload', fd);
-              } catch(e) {
-                console.error('Upload file error:', e);
-              }
-            }
-          }
-        }
-
+        await apiFormData('POST', '/reports/', formData);
         toast('Rapport enregistré !');
         await loadDashboard();
         showScreen('homeScreen');
       } catch(e) {
         showError('reportError', e.message);
-        btn.disabled = false;
-        btn.textContent = 'Enregistrer le rapport';
+        btn.disabled = false; btn.textContent = 'Enregistrer le rapport';
       }
     }
 
-    // ========== REPORTS LIST ==========
+    // Reports List
     async function loadReports() {
       try {
         const reports = await apiCall('GET', '/reports/');
@@ -706,65 +538,50 @@
           return;
         }
         container.innerHTML = reports.map(r => {
-          const taches = r.taches || [];
-          const pkInfo = taches.map(t => t.pk_unique || t.pk_debut || '').filter(Boolean).join(', ');
+          const pk = r.pk_unique || r.pk_debut || '';
           const travaux = TYPE_TRAVAUX.find(t => t.id === r.type_travaux_id);
           return '<div class="card p-3 cursor-pointer hover:shadow-md" onclick="viewReport(' + r.id + ')">' +
-            '<div class="flex justify-between items-center">' +
-            '<div><p class="font-semibold text-sm">' + (r.user_name || '') + '</p>' +
-            '<p class="text-xs text-gray-500">' + (travaux ? travaux.nom : '') + ' | ' + (pkInfo || 'N/A') + '</p></div>' +
-            '<div class="text-right"><span class="text-xs text-gray-400">' + (r.date ? r.date.substring(0, 10) : '') + '</span>' +
-            '<p class="text-xs text-gray-500">' + taches.length + ' tâche(s)</p></div></div></div>';
+            '<div class="flex justify-between"><div><p class="font-semibold text-sm">' + (r.user_name||'') + '</p>' +
+            '<p class="text-xs text-gray-500">' + (travaux?travaux.nom:'') + ' | PK: ' + (pk||'N/A') + '</p></div>' +
+            '<span class="text-xs text-gray-400">' + (r.date?r.date.substring(0,10):'') + '</span></div></div>';
         }).join('');
       } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
     }
 
-    // ========== REPORT DETAIL ==========
+    // Report Detail
     async function viewReport(id) {
       try {
         const report = await apiCall('GET', '/reports/' + id);
         const travaux = TYPE_TRAVAUX.find(t => t.id === report.type_travaux_id);
-        const container = document.getElementById('reportDetailContent');
-
-        let html = '<div class="card p-4 mb-3">' +
-          '<p class="text-sm"><strong>Date:</strong> ' + (report.date ? report.date.substring(0, 10) : '') + '</p>' +
-          '<p class="text-sm"><strong>Travaux:</strong> ' + (travaux ? travaux.nom : '') + '</p>' +
-          '<p class="text-sm"><strong>Auteur:</strong> ' + (report.user_name || '') + '</p>' +
-          (report.observations ? '<p class="text-sm"><strong>Observations:</strong> ' + report.observations + '</p>' : '') +
+        let html = '<div class="card p-4 mb-3"><div class="grid grid-cols-2 gap-2 text-sm">' +
+          '<div><strong>Date:</strong> ' + (report.date?report.date.substring(0,10):'') + '</div>' +
+          '<div><strong>Travaux:</strong> ' + (travaux?travaux.nom:'') + '</div>' +
+          '<div><strong>Auteur:</strong> ' + (report.user_name||'') + '</div>' +
+          '<div><strong>PK:</strong> ' + (report.pk_unique||report.pk_debut||'') + (report.pk_fin?' - '+report.pk_fin:'') + '</div></div>' +
+          (report.observations ? '<p class="text-sm mt-2"><strong>Observations:</strong> ' + report.observations + '</p>' : '') +
           '</div>';
 
-        (report.taches || []).forEach((t, i) => {
+        (report.taches||[]).forEach((t, i) => {
           html += '<div class="card p-3 mb-2 border-l-4 border-primary">' +
-            '<p class="font-semibold text-sm">Tâche ' + (i + 1) + ': ' + t.type_tache + '</p>' +
-            '<p class="text-xs text-gray-600">Statut: ' + (t.statut_autre || '(selection)') + '</p>' +
-            '<p class="text-xs text-gray-600">PK: ' + (t.pk_unique || t.pk_debut || '') + (t.pk_fin ? ' - ' + t.pk_fin : '') + '</p>' +
-            (t.longueur ? '<p class="text-xs text-gray-600">Longueur: ' + t.longueur + ' m</p>' : '') +
-            (t.aide_topo ? '<p class="text-xs text-gray-600">Aide topo: ' + t.aide_topo + '</p>' : '') +
-            (t.description ? '<p class="text-xs text-gray-600">Description: ' + t.description + '</p>' : '');
-
-          // Files
-          if (t.fichiers && t.fichiers.length > 0) {
-            html += '<div class="mt-2"><p class="text-xs font-semibold mb-1">Pièces jointes:</p>';
-            t.fichiers.forEach(f => {
-              const fileUrl = API + '/uploads/' + f.chemin_fichier;
-              const ext = (f.nom_fichier || '').split('.').pop().toLowerCase();
-              if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
-                html += '<a href="' + fileUrl + '" target="_blank"><img src="' + fileUrl + '" class="w-20 h-20 object-cover rounded-lg inline-block mr-1 mb-1"></a>';
-              } else {
-                html += '<a href="' + fileUrl + '" target="_blank" class="text-xs text-primary underline block">' + f.nom_fichier + '</a>';
-              }
-            });
-            html += '</div>';
-          }
-          html += '</div>';
+            '<p class="font-semibold text-sm">Tâche ' + (i+1) + ': ' + t.type_tache + '</p>' +
+            (t.description ? '<p class="text-xs text-gray-600">' + t.description + '</p>' : '') +
+            (t.fichiers && t.fichiers.length ? '<div class="mt-2"><p class="text-xs font-semibold">Pièces jointes:</p>' +
+              t.fichiers.map(f => {
+                const url = API + '/uploads/' + f.chemin_fichier;
+                const ext = (f.nom_fichier||'').split('.').pop().toLowerCase();
+                if (['jpg','jpeg','png','gif'].includes(ext)) {
+                  return '<a href="' + url + '" target="_blank"><img src="' + url + '" class="w-16 h-16 object-cover rounded inline-block mr-1"></a>';
+                }
+                return '<a href="' + url + '" target="_blank" class="text-xs text-primary underline block">' + f.nom_fichier + '</a>';
+              }).join('') + '</div>' : '') +
+            '</div>';
         });
-
-        container.innerHTML = html;
+        document.getElementById('reportDetailContent').innerHTML = html;
         showScreen('reportDetailScreen');
       } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
     }
 
-    // ========== RECEPTIONS ==========
+    // Receptions
     async function loadReceptions() {
       try {
         const receptions = await apiCall('GET', '/receptions/');
@@ -774,115 +591,72 @@
           return;
         }
         container.innerHTML = receptions.map(r => {
-          const photos = r.photos ? JSON.parse(r.photos) : [];
-          const rapports = r.rapport_implantation ? JSON.parse(r.rapport_implantation) : [];
+          let photos = [];
+          let rapports = [];
+          try { photos = r.photos ? JSON.parse(r.photos) : []; } catch(e) {}
+          try { rapports = r.rapport_implantation ? JSON.parse(r.rapport_implantation) : []; } catch(e) {}
           return '<div class="card p-3 mb-2">' +
             '<div class="flex justify-between items-start">' +
             '<div><p class="font-semibold text-sm">' + r.type_travaux + '</p>' +
-            '<p class="text-xs text-gray-500">PK: ' + (r.pk || 'N/A') + '</p></div>' +
-            '<span class="chip ' + (r.mdc_signee ? 'chip-green' : 'chip-orange') + '">' + (r.mdc_signee ? 'Signé MDC' : 'Provisoire') + '</span></div>' +
+            '<p class="text-xs text-gray-500">PK: ' + (r.pk||'N/A') + '</p></div>' +
+            '<span class="chip ' + (r.mdc_signee?'chip-green':'chip-orange') + '">' + (r.mdc_signee?'Signé MDC':'Provisoire') + '</span></div>' +
             (r.description ? '<p class="text-xs text-gray-600 mt-1">' + r.description + '</p>' : '') +
-            '<div class="flex gap-2 mt-2 text-xs text-gray-500">' +
-            '<span>' + photos.length + ' photo(s)</span>' +
-            '<span>' + rapports.length + ' rapport(s)</span>' +
-            '</div>' +
-            (r.mdc_signee && r.fichier_signee ? '<div class="mt-2"><a href="' + API + '/uploads/' + r.fichier_signee + '" target="_blank" class="text-xs text-primary underline">Voir document signé</a></div>' : '') +
-            (r.mdc_signee ? '' :
-              '<div class="mt-2 flex gap-2">' +
-              '<input type="file" accept="image/*" multiple onchange="uploadReceptionPhotos(' + r.id + ', this.files)" class="text-xs">' +
-              (CURRENT_USER && CURRENT_USER.role === 'super_admin' ? '<input type="file" accept=".pdf,.jpg,.png" onchange="signReceptionMDC(' + r.id + ', this.files)" class="text-xs">' : '') +
-              '</div>') +
+            '<div class="flex gap-2 mt-2 text-xs text-gray-500"><span>' + photos.length + ' photo(s)</span><span>' + rapports.length + ' rapport(s)</span></div>' +
+            (r.fichier_signee ? '<div class="mt-2"><a href="' + API + '/uploads/' + r.fichier_signee + '" target="_blank" class="text-xs text-primary underline">Voir document signé</a></div>' : '') +
             '</div>';
         }).join('');
       } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
     }
 
-    async function uploadReceptionPhotos(id, files) {
-      if (!files || files.length === 0) return;
-      for (const file of files) {
-        const fd = new FormData();
-        fd.append('file', file);
-        try {
-          await apiUpload('POST', '/receptions/' + id + '/upload-photo', fd);
-        } catch(e) { toast('Erreur photo: ' + e.message, 'bg-red-600'); }
-      }
-      toast('Photos uploadées');
-      loadReceptions();
-    }
-
-    async function signReceptionMDC(id, files) {
-      if (!files || files.length === 0) return;
-      const fd = new FormData();
-      fd.append('file', files[0]);
-      try {
-        await apiUpload('POST', '/receptions/' + id + '/sign-mdc', fd);
-        toast('Document signé par MDC enregistré');
-        loadReceptions();
-      } catch(e) { toast('Erreur signature: ' + e.message, 'bg-red-600'); }
-    }
-
-    // ========== ADMIN ==========
+    // Admin
     async function loadAdmin() {
-      if (!CURRENT_USER || CURRENT_USER.role !== 'super_admin') {
+      if (!CURRENT_USER || CURRENT_USER.role !== 'super_admin')
         return toast('Accès non autorisé', 'bg-red-600');
-      }
       try {
         const [summary, users, pending] = await Promise.all([
           apiCall('GET', '/reports/admin/summary'),
           apiCall('GET', '/users/'),
           apiCall('GET', '/receptions/pending-mdc')
         ]);
-
         document.getElementById('adminStats').innerHTML =
-          '<div class="stat-card"><p class="stat-label">Utilisateurs</p><p class="stat-value">' + (summary.total_users || 0) + '</p></div>' +
-          '<div class="stat-card"><p class="stat-label">Rapports</p><p class="stat-value">' + (summary.total_reports || 0) + '</p></div>';
-
-        document.getElementById('adminUsers').innerHTML = (users || []).map(u =>
+          '<div class="stat-card"><p class="stat-label">Utilisateurs</p><p class="stat-value">' + (summary.total_users||0) + '</p></div>' +
+          '<div class="stat-card"><p class="stat-label">Rapports</p><p class="stat-value">' + (summary.total_reports||0) + '</p></div>';
+        document.getElementById('adminUsers').innerHTML = (users||[]).map(u =>
           '<div class="card p-3 flex justify-between items-center">' +
           '<div><p class="font-semibold text-sm">' + u.nom + ' ' + u.prenoms + '</p>' +
           '<p class="text-xs text-gray-500">' + u.fonction + ' | ' + u.email + '</p></div>' +
-          '<span class="chip ' + (u.role === 'super_admin' ? 'chip-primary' : 'chip-gray') + '">' + (u.role === 'super_admin' ? 'Admin' : 'Membre') + '</span></div>'
+          '<span class="chip ' + (u.role==='super_admin'?'chip-primary':'chip-gray') + '">' + (u.role==='super_admin'?'Admin':'Membre') + '</span></div>'
         ).join('');
-
-        document.getElementById('adminPendingMDC').innerHTML = (pending.pending && pending.pending.length > 0) ?
-          pending.pending.map(p =>
-            '<div class="card p-3 flex justify-between items-center">' +
-            '<div><p class="font-semibold text-sm">' + (p.type_travaux || '') + '</p>' +
-            '<p class="text-xs text-gray-500">PK: ' + (p.pk || 'N/A') + '</p></div>' +
-            '<span class="chip-orange">En attente</span></div>'
-          ).join('') :
-          '<p class="text-gray-400 text-sm text-center py-4">Aucune signature en attente</p>';
-
+        document.getElementById('adminPendingMDC').innerHTML = (pending.pending && pending.pending.length) ?
+          pending.pending.map(p => '<div class="card p-3"><p class="font-semibold text-sm">' + (p.type_travaux||'') + ' | PK: ' + (p.pk||'N/A') + '</p><span class="chip-orange">En attente</span></div>').join('') :
+          '<p class="text-gray-400 text-sm text-center py-4">Aucune</p>';
         showScreen('adminScreen');
       } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
     }
 
-    // ========== SEARCH ==========
+    // Search
     async function doSearch() {
       const q = document.getElementById('searchInput').value.trim();
       if (!q) return;
-
       try {
         const data = await apiCall('GET', '/search/?q=' + encodeURIComponent(q));
         const container = document.getElementById('searchResults');
-
         let html = '';
-        if (data.reports && data.reports.length > 0) {
+        if (data.reports && data.reports.length) {
           html += '<h3 class="font-bold text-sm text-gray-700 mb-2">Rapports (' + data.reports.length + ')</h3>';
-          html += data.reports.slice(0, 10).map(r =>
+          html += data.reports.slice(0,10).map(r =>
             '<div class="card p-3 cursor-pointer hover:shadow-md" onclick="viewReport(' + r.id + ')">' +
-            '<p class="font-semibold text-sm">' + (r.user_name || '') + '</p>' +
-            '<p class="text-xs text-gray-500">' + (r.observations || '') + '</p>' +
-            '<span class="text-xs text-gray-400">' + (r.date ? r.date.substring(0, 10) : '') + '</span></div>'
+            '<p class="font-semibold text-sm">' + (r.user_name||'') + '</p>' +
+            '<p class="text-xs text-gray-500">' + (r.observations||'') + '</p>' +
+            '<span class="text-xs text-gray-400">' + (r.date?r.date.substring(0,10):'') + '</span></div>'
           ).join('');
         }
-        if (data.receptions && data.receptions.length > 0) {
+        if (data.receptions && data.receptions.length) {
           html += '<h3 class="font-bold text-sm text-gray-700 mb-2 mt-4">Réceptions (' + data.receptions.length + ')</h3>';
-          html += data.receptions.slice(0, 10).map(r =>
-            '<div class="card p-3">' +
-            '<p class="font-semibold text-sm">' + r.type_travaux + '</p>' +
-            '<p class="text-xs text-gray-500">PK: ' + (r.pk || 'N/A') + '</p>' +
-            '<span class="chip ' + (r.mdc_signee ? 'chip-green' : 'chip-orange') + '">' + (r.mdc_signee ? 'Signé' : 'Provisoire') + '</span></div>'
+          html += data.receptions.slice(0,10).map(r =>
+            '<div class="card p-3"><p class="font-semibold text-sm">' + r.type_travaux + '</p>' +
+            '<p class="text-xs text-gray-500">PK: ' + (r.pk||'N/A') + '</p>' +
+            '<span class="chip ' + (r.mdc_signee?'chip-green':'chip-orange') + '">' + (r.mdc_signee?'Signé':'Provisoire') + '</span></div>'
           ).join('');
         }
         if (!html) html = '<p class="text-gray-400 text-sm text-center py-8">Aucun résultat</p>';
@@ -890,22 +664,18 @@
       } catch(e) { toast('Erreur: ' + e.message, 'bg-red-600'); }
     }
 
-    // ========== SETTINGS ==========
     function toggleSettings() {
-      const modal = document.getElementById('settingsModal');
-      document.getElementById('backendUrlInput').value = localStorage.getItem('topo_api_url') || DEFAULT_API;
-      modal.classList.toggle('hidden');
+      document.getElementById('settingsModal').classList.toggle('hidden');
+      document.getElementById('backendUrlInput').value = localStorage.getItem('topo_api_url')||DEFAULT_API;
     }
-
     function saveBackendUrl() {
       const url = document.getElementById('backendUrlInput').value.trim();
       if (url) localStorage.setItem('topo_api_url', url);
       else localStorage.removeItem('topo_api_url');
       document.getElementById('settingsModal').classList.add('hidden');
-      toast('URL sauvegardée. Reconnectez-vous.');
+      toast('URL sauvegardée');
     }
 
-    // Init
     init();
   </script>
 </body>
